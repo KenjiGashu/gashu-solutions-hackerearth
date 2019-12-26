@@ -5,7 +5,7 @@
     :when beg :collect (subseq string beg end)
     :while end))
 
-(defun delimiterp (c) (or (char= c #\Space) (char= c #\,)))
+(defun my-delimiterp (c) (or (char= c #\Space) (char= c #\,)))
 
 (defun delimiterp (c) (position c " ,.;/"))
 
