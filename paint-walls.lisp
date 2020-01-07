@@ -101,9 +101,9 @@
 ;;     ))
 
 (defun solve (cases)
-(dotimes (oi cases)
+  (dotimes (oi cases)
     ;; reads n m k and create array of dimensions N x M
-  (format t "carambolas~%")
+    (format t "carambolas~%")
     (let* ((values (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space))))
 	   (n (progn (format t "hue~%")
 		     (parse-integer (nth 0 values))))
@@ -125,17 +125,19 @@
 
       (format t "~a~%" array)
 
-      (loop for i from 0 to (- n 2) do
-      	(setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
-      							      (aref array (+ i 1) 0)))))
+      ;; (loop for i from 0 to (- n 2) do
+      ;; 	(setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+      ;; 							      (aref array (+ i 1) 0)))))
       
-      (loop for j from 0 to (- m 2) do
-      	(setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
-      							    (aref array 0 (+ j 1))))))
+      ;; (loop for j from 0 to (- m 2) do
+      ;; 	(setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+      ;; 							    (aref array 0 (+ j 1))))))
       
       
       (when (<= k m)
       	(loop for i from 0 to (- n 2) do
+	  (setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+								(aref array (+1 i) 0))))
       	  (loop for j from 1 to (1- m) do
       	    (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
       								  (aref array (1+ i) j)
@@ -144,6 +146,8 @@
 
       (when (<= k n)
       	(loop for j from 0 to (- m 2) do
+	  (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+							      (aref array 0 (+ j 1)))))
       	  (loop for i from 1 to (- n 1) do
       	    (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
       								(aref array i (+ j 1))
@@ -173,9 +177,9 @@
 
 
 (defun solve2 (cases)
-(dotimes (oi cases)
+  (dotimes (oi cases)
     ;; reads n m k and create array of dimensions N x M
-  (format t "carambolas~%")
+    (format t "carambolas~%")
     (let* ((values (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space))))
 	   (n (progn (format t "hue~%")
 		     (parse-integer (nth 0 values))))
@@ -252,302 +256,302 @@
 (defparameter cases (parse-integer (read-line)))
 (format t "cases: ~a~%" cases)
 (dotimes (oi cases)
-    ;; reads n m k and create array of dimensions N x M
+  ;; reads n m k and create array of dimensions N x M
   (format t "carambolas~%")
-    (let* ((values (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space))))
-	   (n (progn (format t "hue~%")
-		     (parse-integer (nth 0 values))))
-	   (m (parse-integer (nth 1 values)))
-	   (k (parse-integer (nth 2 values)))
-	   (array (make-array (list n m) :element-type :fixnum))
-	   (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
-	   (cost-array-vertical (make-array (list n m) :element-type :fixnum))
-	   (min 999999999999999999))
-      (declare (type fixnum sum)
-	       (type (array fixnum) array cost-array-horizontal cost-array-vertical)
-	       (optimize (speed 3) (safety 0)))
-      (format t "~a ~a ~a~%" n m k)
-      ;;populate array
-      (dotimes (j n)
-	(let* ((row (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space)))))
-	  (dotimes (z m)
-	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
+  (let* ((values (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space))))
+	 (n (progn (format t "hue~%")
+		   (parse-integer (nth 0 values))))
+	 (m (parse-integer (nth 1 values)))
+	 (k (parse-integer (nth 2 values)))
+	 (array (make-array (list n m) :element-type :fixnum))
+	 (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
+	 (cost-array-vertical (make-array (list n m) :element-type :fixnum))
+	 (min 999999999999999999))
+    (declare (type fixnum sum)
+	     (type (array fixnum) array cost-array-horizontal cost-array-vertical)
+	     (optimize (speed 3) (safety 0)))
+    (format t "~a ~a ~a~%" n m k)
+    ;;populate array
+    (dotimes (j n)
+      (let* ((row (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space)))))
+	(dotimes (z m)
+	  (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
 
-      (format t "~a~%" array)
+    (format t "~a~%" array)
 
+    (loop for i from 0 to (- n 2) do
+      (setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+							    (aref array (+ i 1) 0)))))
+    
+    (loop for j from 0 to (- m 2) do
+      (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+							  (aref array 0 (+ j 1))))))
+    
+    
+    (when (<= k m)
       (loop for i from 0 to (- n 2) do
-      	(setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
-      							      (aref array (+ i 1) 0)))))
-      
-      (loop for j from 0 to (- m 2) do
-      	(setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
-      							    (aref array 0 (+ j 1))))))
-      
-      
-      (when (<= k m)
-      	(loop for i from 0 to (- n 2) do
-      	  (loop for j from 1 to (1- m) do
-      	    (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
-      								  (aref array (1+ i) j)
-      								  (aref cost-array-horizontal i (1- j))))))))
-      (format t "array custo horizontal: ~a~%" cost-array-horizontal)
+	(loop for j from 1 to (1- m) do
+	  (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
+								(aref array (1+ i) j)
+								(aref cost-array-horizontal i (1- j))))))))
+    (format t "array custo horizontal: ~a~%" cost-array-horizontal)
 
-      (when (<= k n)
-      	(loop for j from 0 to (- m 2) do
-      	  (loop for i from 1 to (- n 1) do
-      	    (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
-      								(aref array i (+ j 1))
-      								(aref cost-array-vertical (1- i) j)))))))
-      (format t "array custo vertical: ~a~%" cost-array-vertical)
-      (when (<= k m)
-      	(loop  for i from 0 to (- n 2) do
-      	  (loop for j from (- k 1) to (1- m) do
-      	    (let ((sum (the fixnum (if (< (- j k) 0)
-      				       (aref cost-array-horizontal i j)
-      				       (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
-      	      (when (< sum min)
-      		(setf min sum))))))
-      (when (<= k n)
-      	(loop  for j from 0 to (- m 2) do
-      	  (loop for i from (- k 1) to (- n 1) do
-      	    (let ((sum (the fixnum (if (< (- i k) 0)
-      				       (aref cost-array-vertical i j)
-      				       (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
-      	      (when (< sum min)
-      		(setf min sum))))))
-      (if (and (> k n)
-      	       (> k m))
-      	  (format t "~a~%" -1)
-      	  (format t "~a~%" min))
-      ))
+    (when (<= k n)
+      (loop for j from 0 to (- m 2) do
+	(loop for i from 1 to (- n 1) do
+	  (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
+							      (aref array i (+ j 1))
+							      (aref cost-array-vertical (1- i) j)))))))
+    (format t "array custo vertical: ~a~%" cost-array-vertical)
+    (when (<= k m)
+      (loop  for i from 0 to (- n 2) do
+	(loop for j from (- k 1) to (1- m) do
+	  (let ((sum (the fixnum (if (< (- j k) 0)
+				     (aref cost-array-horizontal i j)
+				     (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
+	    (when (< sum min)
+	      (setf min sum))))))
+    (when (<= k n)
+      (loop  for j from 0 to (- m 2) do
+	(loop for i from (- k 1) to (- n 1) do
+	  (let ((sum (the fixnum (if (< (- i k) 0)
+				     (aref cost-array-vertical i j)
+				     (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
+	    (when (< sum min)
+	      (setf min sum))))))
+    (if (and (> k n)
+	     (> k m))
+	(format t "~a~%" -1)
+	(format t "~a~%" min))
+    ))
 
 ;;to test with slime using paint-walls.data as input
 (time (with-open-file (in test-filename :direction :input)
-  ;; (defparameter test-num (parse-integer (read-line in)))
+	;; (defparameter test-num (parse-integer (read-line in)))
 	(format t "::????")
 	(defparameter test-num (parse-integer (read-line in)))
 	(format t "test-num: ~a~%" test-num)
-  (dotimes (i test-num)
-    ;; reads n m k and create array of dimensions N x M
-    (let* ((values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
-	   (n (parse-integer (nth 0 values)))
-	   (m (parse-integer (nth 1 values)))
-	   (k (parse-integer (nth 2 values)))
-	   (array (make-array (list n m) :element-type :fixnum))
-	   (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
-	   (cost-array-vertical (make-array (list n m) :element-type :fixnum))
-	   (min 999999999999999999))
-      (declare (optimize (speed 3) (safety 0)))
-      (declare (type fixnum sum j z ))
-      (declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
-      (format t "n: ~a m: ~a k: ~a~%" n m k)
-      ;;populate array
-      (dotimes (j n)
-	(let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
-	  (dotimes (z m)
-	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
+	(dotimes (i test-num)
+	  ;; reads n m k and create array of dimensions N x M
+	  (let* ((values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
+		 (n (parse-integer (nth 0 values)))
+		 (m (parse-integer (nth 1 values)))
+		 (k (parse-integer (nth 2 values)))
+		 (array (make-array (list n m) :element-type :fixnum))
+		 (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
+		 (cost-array-vertical (make-array (list n m) :element-type :fixnum))
+		 (min 999999999999999999))
+	    (declare (optimize (speed 3) (safety 0)))
+	    (declare (type fixnum sum j z ))
+	    (declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
+	    (format t "n: ~a m: ~a k: ~a~%" n m k)
+	    ;;populate array
+	    (dotimes (j n)
+	      (let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
+		(dotimes (z m)
+		  (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
 
-      (format t "array: ~a~%" array)
+	    (format t "array: ~a~%" array)
 
-      (loop for i from 0 to (- n 2) do
-	(setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
-							      (aref array (+ i 1) 0)))))
-      
-      (loop for j from 0 to (- m 2) do
-	(setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
-							    (aref array 0 (+ j 1))))))
-      
-      
-      (when (<= k m)
-	(loop for i from 0 to (- n 2) do
-	  (loop for j from 1 to (1- m) do
-	    (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
-								  (aref array (1+ i) j)
-								  (aref cost-array-horizontal i (1- j))))))))
-      (format t "array custo horizontal: ~a~%" cost-array-horizontal)
+	    (loop for i from 0 to (- n 2) do
+	      (setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+								    (aref array (+ i 1) 0)))))
+	    
+	    (loop for j from 0 to (- m 2) do
+	      (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+								  (aref array 0 (+ j 1))))))
+	    
+	    
+	    (when (<= k m)
+	      (loop for i from 0 to (- n 2) do
+		(loop for j from 1 to (1- m) do
+		  (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
+									(aref array (1+ i) j)
+									(aref cost-array-horizontal i (1- j))))))))
+	    (format t "array custo horizontal: ~a~%" cost-array-horizontal)
 
-      (when (<= k n)
-	(loop for j from 0 to (- m 2) do
-	  (loop for i from 1 to (- n 1) do
-	    (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
-								(aref array i (+ j 1))
-								(aref cost-array-vertical (1- i) j)))))))
-      (format t "array custo vertical: ~a~%" cost-array-vertical)
-      (when (<= k m)
-	(loop  for i from 0 to (- n 2) do
-	  (loop for j from (- k 1) to (1- m) do
-	    (let ((sum (the fixnum (if (< (- j k) 0)
-				       (aref cost-array-horizontal i j)
-				       (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
-	      (when (< sum min)
-		(setf min sum))))))
-      (when (<= k n)
-	(loop  for j from 0 to (- m 2) do
-	  (loop for i from (- k 1) to (- n 1) do
-	    (let ((sum (the fixnum (if (< (- i k) 0)
-				       (aref cost-array-vertical i j)
-				       (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
-	      (when (< sum min)
-		(setf min sum))))))
-      (if (and (> k n)
-	       (> k m))
-	  (format t "~a~%" -1)
-	  (format t "~a~%" min))))))
+	    (when (<= k n)
+	      (loop for j from 0 to (- m 2) do
+		(loop for i from 1 to (- n 1) do
+		  (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
+								      (aref array i (+ j 1))
+								      (aref cost-array-vertical (1- i) j)))))))
+	    (format t "array custo vertical: ~a~%" cost-array-vertical)
+	    (when (<= k m)
+	      (loop  for i from 0 to (- n 2) do
+		(loop for j from (- k 1) to (1- m) do
+		  (let ((sum (the fixnum (if (< (- j k) 0)
+					     (aref cost-array-horizontal i j)
+					     (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
+		    (when (< sum min)
+		      (setf min sum))))))
+	    (when (<= k n)
+	      (loop  for j from 0 to (- m 2) do
+		(loop for i from (- k 1) to (- n 1) do
+		  (let ((sum (the fixnum (if (< (- i k) 0)
+					     (aref cost-array-vertical i j)
+					     (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
+		    (when (< sum min)
+		      (setf min sum))))))
+	    (if (and (> k n)
+		     (> k m))
+		(format t "~a~%" -1)
+		(format t "~a~%" min))))))
 
-
-(time (with-open-file (in "paint-walls.data6" :direction :input)
-  ;; (defparameter test-num (parse-integer (read-line in)))
-	(defparameter test-num 2)
-  (dotimes (i test-num)
-    ;; reads n m k and create array of dimensions N x M
-    (let* (
-	   ;;(values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
-	   (n (read in))
-	   (m (read in))
-	   (k (read in))
-	   (array (make-array (list n m) :element-type :fixnum))
-	   (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
-	   (cost-array-vertical (make-array (list n m) :element-type :fixnum))
-	   (min 999999999999999999))
-      (declare (optimize (speed 3) (safety 0)))
-      (declare (type fixnum sum j z ))
-      (declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
-      (format t "n: ~a m: ~a k: ~a~%" n m k)
-      ;;(format t "~a~%" array)
-      ;;(format t "n: ~a ~%" n)
-      ;;populate array
-      ;;(format t "~a" values)
-      ;;(format t "~a" (read in))
-      (setf array (read in))
-      ;; (dotimes (j n)
-      ;; 	(let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
-      ;; 	  (dotimes (z m)
-      ;; 	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
-
-      ;;(format t "array: ~a~%" array)
-
-      (loop for i from 0 to (- n 2) do
-      	(setf (aref cost-array-horizontal i 0) (+ (aref array i 0)
-      						  (aref array (+ i 1) 0))))
-      
-      (loop for j from 0 to (- m 2) do
-      	(setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
-      							    (aref array 0 (+ j 1))))))
-      
-      
-      (when (<= k m)
-      	(loop for i from 0 to (- n 2) do
-      	  (loop for j from 1 to (1- m) do
-      	    (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
-      								  (aref array (1+ i) j)
-      								  (aref cost-array-horizontal i (1- j))))))))
-      ;;(format t "array custo horizontal: ~a~%" cost-array-horizontal)
-
-      (when (<= k n)
-      	(loop for j from 0 to (- m 2) do
-      	  (loop for i from 1 to (- n 1) do
-      	    (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
-      								(aref array i (+ j 1))
-      								(aref cost-array-vertical (1- i) j)))))))
-      ;;(format t "array custo vertical: ~a~%" cost-array-vertical)
-      (when (<= k m)
-      	(loop  for i from 0 to (- n 2) do
-      	  (loop for j from (- k 1) to (1- m) do
-      	    (let ((sum (the fixnum (if (< (- j k) 0)
-      				       (aref cost-array-horizontal i j)
-      				       (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
-      	      (when (< sum min)
-      		(setf min sum))))))
-      (when (<= k n)
-      	(loop  for j from 0 to (- m 2) do
-      	  (loop for i from (- k 1) to (- n 1) do
-      	    (let ((sum (the fixnum (if (< (- i k) 0)
-      				       (aref cost-array-vertical i j)
-      				       (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
-      	      (when (< sum min)
-      		(setf min sum))))))
-      (if (and (> k n)
-      	       (> k m))
-      	  (format t "~a~%" -1)
-      	  (format t "~a~%" min))
-      ))))
 
 (time (with-open-file (in "paint-walls.data6" :direction :input)
-  ;; (defparameter test-num (parse-integer (read-line in)))
+	;; (defparameter test-num (parse-integer (read-line in)))
 	(defparameter test-num 2)
-  (dotimes (i test-num)
-    ;; reads n m k and create array of dimensions N x M
-    (let* (
-	   ;;(values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
-	   (n (read in))
-	   (m (read in))
-	   (k (read in))
-	   (array (make-array (list n m) :element-type :fixnum))
-	   (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
-	   (cost-array-vertical (make-array (list n m) :element-type :fixnum))
-	   (min 999999999999999999))
-      (declare (optimize (speed 3) (safety 0)))
-      (declare (type fixnum sum j z n m k i j))
-      (declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
-      (format t "n: ~a m: ~a k: ~a~%" n m k)
-      ;;(format t "~a~%" array)
-      ;;(format t "n: ~a ~%" n)
-      ;;populate array
-      ;;(format t "~a" values)
-      ;;(format t "~a" (read in))
-      (setf array (read in))
-      ;; (dotimes (j n)
-      ;; 	(let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
-      ;; 	  (dotimes (z m)
-      ;; 	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
+	(dotimes (i test-num)
+	  ;; reads n m k and create array of dimensions N x M
+	  (let* (
+		 ;;(values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
+		 (n (read in))
+		 (m (read in))
+		 (k (read in))
+		 (array (make-array (list n m) :element-type :fixnum))
+		 (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
+		 (cost-array-vertical (make-array (list n m) :element-type :fixnum))
+		 (min 999999999999999999))
+	    (declare (optimize (speed 3) (safety 0)))
+	    (declare (type fixnum sum j z ))
+	    (declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
+	    (format t "n: ~a m: ~a k: ~a~%" n m k)
+	    ;;(format t "~a~%" array)
+	    ;;(format t "n: ~a ~%" n)
+	    ;;populate array
+	    ;;(format t "~a" values)
+	    ;;(format t "~a" (read in))
+	    (setf array (read in))
+	    ;; (dotimes (j n)
+	    ;; 	(let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
+	    ;; 	  (dotimes (z m)
+	    ;; 	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
 
-      ;;(format t "array: ~a~%" array)
+	    ;;(format t "array: ~a~%" array)
 
-      (loop for i from 0 to (- n 2) do
-      	(setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
-      						  (aref array (+ i 1) 0)))))
-      
-      (loop for j from 0 to (- m 2) do
-      	(setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
-      							    (aref array 0 (+ j 1))))))
-      
-      
-      (when (<= k m)
-      	(loop for i from 0 to (- n 2) do
-      	  (loop for j from 1 to (1- m) do
-      	    (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
-      								  (aref array (1+ i) j)
-      								  (aref cost-array-horizontal i (1- j))))))))
-      ;;(format t "array custo horizontal: ~a~%" cost-array-horizontal)
+	    (loop for i from 0 to (- n 2) do
+	      (setf (aref cost-array-horizontal i 0) (+ (aref array i 0)
+							(aref array (+ i 1) 0))))
+	    
+	    (loop for j from 0 to (- m 2) do
+	      (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+								  (aref array 0 (+ j 1))))))
+	    
+	    
+	    (when (<= k m)
+	      (loop for i from 0 to (- n 2) do
+		(loop for j from 1 to (1- m) do
+		  (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
+									(aref array (1+ i) j)
+									(aref cost-array-horizontal i (1- j))))))))
+	    ;;(format t "array custo horizontal: ~a~%" cost-array-horizontal)
 
-      (when (<= k n)
-      	(loop for j from 0 to (- m 2) do
-      	  (loop for i from 1 to (- n 1) do
-      	    (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
-      								(aref array i (+ j 1))
-      								(aref cost-array-vertical (1- i) j)))))))
-      ;;(format t "array custo vertical: ~a~%" cost-array-vertical)
-      (when (<= k m)
-      	(loop  for i from 0 to (- n 2) do
-      	  (loop for j from (- k 1) to (1- m) do
-      	    (let ((sum (the fixnum (if (< (- j k) 0)
-      				       (aref cost-array-horizontal i j)
-      				       (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
-      	      (when (< sum min)
-      		(setf min sum))))))
-      (when (<= k n)
-      	(loop  for j from 0 to (- m 2) do
-      	  (loop for i from (- k 1) to (- n 1) do
-      	    (let ((sum (the fixnum (if (< (- i k) 0)
-      				       (aref cost-array-vertical i j)
-      				       (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
-      	      (when (< sum min)
-      		(setf min sum))))))
-      (if (and (> k n)
-      	       (> k m))
-      	  (format t "~a~%" -1)
-      	  (format t "~a~%" min))
-      ))))
+	    (when (<= k n)
+	      (loop for j from 0 to (- m 2) do
+		(loop for i from 1 to (- n 1) do
+		  (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
+								      (aref array i (+ j 1))
+								      (aref cost-array-vertical (1- i) j)))))))
+	    ;;(format t "array custo vertical: ~a~%" cost-array-vertical)
+	    (when (<= k m)
+	      (loop  for i from 0 to (- n 2) do
+		(loop for j from (- k 1) to (1- m) do
+		  (let ((sum (the fixnum (if (< (- j k) 0)
+					     (aref cost-array-horizontal i j)
+					     (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
+		    (when (< sum min)
+		      (setf min sum))))))
+	    (when (<= k n)
+	      (loop  for j from 0 to (- m 2) do
+		(loop for i from (- k 1) to (- n 1) do
+		  (let ((sum (the fixnum (if (< (- i k) 0)
+					     (aref cost-array-vertical i j)
+					     (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
+		    (when (< sum min)
+		      (setf min sum))))))
+	    (if (and (> k n)
+		     (> k m))
+		(format t "~a~%" -1)
+		(format t "~a~%" min))
+	    ))))
+
+(time (with-open-file (in "paint-walls.data6" :direction :input)
+	;; (defparameter test-num (parse-integer (read-line in)))
+	(defparameter test-num 2)
+	(dotimes (i test-num)
+	  ;; reads n m k and create array of dimensions N x M
+	  (let* (
+		 ;;(values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
+		 (n (read in))
+		 (m (read in))
+		 (k (read in))
+		 (array (make-array (list n m) :element-type :fixnum))
+		 (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
+		 (cost-array-vertical (make-array (list n m) :element-type :fixnum))
+		 (min 999999999999999999))
+	    (declare (optimize (speed 3) (safety 0)))
+	    (declare (type fixnum sum j z n m k i j))
+	    (declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
+	    (format t "n: ~a m: ~a k: ~a~%" n m k)
+	    ;;(format t "~a~%" array)
+	    ;;(format t "n: ~a ~%" n)
+	    ;;populate array
+	    ;;(format t "~a" values)
+	    ;;(format t "~a" (read in))
+	    (setf array (read in))
+	    ;; (dotimes (j n)
+	    ;; 	(let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
+	    ;; 	  (dotimes (z m)
+	    ;; 	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
+
+	    ;;(format t "array: ~a~%" array)
+
+	    (loop for i from 0 to (- n 2) do
+	      (setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+								    (aref array (+ i 1) 0)))))
+	    
+	    (loop for j from 0 to (- m 2) do
+	      (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+								  (aref array 0 (+ j 1))))))
+	    
+	    
+	    (when (<= k m)
+	      (loop for i from 0 to (- n 2) do
+		(loop for j from 1 to (1- m) do
+		  (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
+									(aref array (1+ i) j)
+									(aref cost-array-horizontal i (1- j))))))))
+	    ;;(format t "array custo horizontal: ~a~%" cost-array-horizontal)
+
+	    (when (<= k n)
+	      (loop for j from 0 to (- m 2) do
+		(loop for i from 1 to (- n 1) do
+		  (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
+								      (aref array i (+ j 1))
+								      (aref cost-array-vertical (1- i) j)))))))
+	    ;;(format t "array custo vertical: ~a~%" cost-array-vertical)
+	    (when (<= k m)
+	      (loop  for i from 0 to (- n 2) do
+		(loop for j from (- k 1) to (1- m) do
+		  (let ((sum (the fixnum (if (< (- j k) 0)
+					     (aref cost-array-horizontal i j)
+					     (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
+		    (when (< sum min)
+		      (setf min sum))))))
+	    (when (<= k n)
+	      (loop  for j from 0 to (- m 2) do
+		(loop for i from (- k 1) to (- n 1) do
+		  (let ((sum (the fixnum (if (< (- i k) 0)
+					     (aref cost-array-vertical i j)
+					     (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
+		    (when (< sum min)
+		      (setf min sum))))))
+	    (if (and (> k n)
+		     (> k m))
+		(format t "~a~%" -1)
+		(format t "~a~%" min))
+	    ))))
 
 
 
@@ -759,7 +763,7 @@
 		(format t "~a~%" -1)
 		(format t "~a~%" min))))))
 
-(defparameter testes (make-array '(9 10) :element-type :fixnum))
+(defparameter testes (make-array '(9999 999) :element-type :fixnum :initial-element 3))
 
 (time (setf (aref testes 0) 9))
 
@@ -778,3 +782,221 @@
 (disassemble 'optmize-access2)
 (time (optmize-access testes 0))
 (time (optmize-access2 testes 0))
+
+(defun non-opt-sum (array)
+  (let* ((rank (array-rank array))
+	 (sum 0))
+    (dotimes (i (array-dimension array 0))
+      (dotimes (j (array-dimension array 1))
+	(setf sum (+ sum (aref array i j)))))
+    sum))
+
+(defun non-opt-sum (array)
+  (let* ((rank (array-rank array))
+	 (sum 0)
+	 (temp (make-array (list (array-dimension array 0) (array-dimension array 1)) :element-type :fixnum)))
+    (dotimes (i (array-dimension array 0))
+      (dotimes (j (array-dimension array 1))
+	(setf (aref temp i j) (+ sum (aref array i j)))))
+    temp))
+
+(defun opt-sum (array)
+  (declare (type (array fixnum *))
+	   (optimize (speed 3) (safety 0)))
+  (let* ((rank (array-rank array))
+	 (sum 0)
+	 (temp (make-array (list (array-dimension array 0) (array-dimension array 1)))))
+    (declare (type fixnum sum))
+    (dotimes (i (array-dimension array 0))
+      (dotimes (j (array-dimension array 1))
+	(setf (aref temp i j) (+ sum (aref array i j)))))
+    temp))
+
+(disassemble 'non-opt-sum)
+(disassemble 'opt-sum)
+
+(time (non-opt-sum testes))
+(time (opt-sum testes))
+
+
+(defun temp (array)
+  (declare (type (array (signed-byte 62) *) array))
+  (let ((result 0))
+    (declare (type fixnum result))
+    ;; (format t "array-size: ~a~%" (array-dimension array 0))
+    (dotimes (i (array-dimension array 0))
+      (dotimes (j (array-dimension array 1))
+	(setf result (+ result (aref array i j)))))
+    ;; (format t "array[i]: ~a~%" (aref array i)))
+    result))
+(declaim (type (array fixnum *) temp-array))
+(defparameter temp-array2 (make-array '(999 20) :element-type '(signed-byte 62) :initial-element (the (signed-byte 62) 90)))
+(defparameter temp-array3 (make-array '(999) :element-type '(signed-byte 62) :initial-element (the (signed-byte 62) 90)))
+(describe temp-array2)
+(type-of temp-array2)
+(integer-length (aref temp-array2 0 0))
+(integer-length most-positive-fixnum)
+(defparameter temp-array (make-array '(9999999) :element-type :fixnum :initial-element 99999))
+
+(temp temp-array2)
+
+(defun solverson ()
+  (with-open-file (in "paint-walls.data6" :direction :input)
+    ;; (defparameter test-num (parse-integer (read-line in)))
+    (dotimes (i 2)
+      ;; reads n m k and create array of dimensions N x M
+      (let* (
+	     ;;(values (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space))))
+	     (n (read in))
+	     (m (read in))
+	     (k (read in))
+	     (array (make-array (list n m) :element-type :fixnum))
+	     (cost-array-horizontal (make-array (list n m) :element-type :fixnum))
+	     (cost-array-vertical (make-array (list n m) :element-type :fixnum))
+	     (min 999999999999999999))
+	(declare (optimize (speed 3) (safety 0)))
+	(declare (type fixnum sum j z n m k i j))
+	(declare (type (array fixnum) array cost-array-horizontal cost-array-vertical))
+	(format t "n: ~a m: ~a k: ~a~%" n m k)
+	;;(format t "~a~%" array)
+	;;(format t "n: ~a ~%" n)
+	;;populate array
+	;;(format t "~a" values)
+	;;(format t "~a" (read in))
+	(setf array (read in))
+	;; (dotimes (j n)
+	;; 	(let* ((row (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
+	;; 	  (dotimes (z m)
+	;; 	    (setf (aref array j z) (the fixnum (parse-integer (nth z row)))))))
+
+	;;(format t "array: ~a~%" array)
+
+	(loop for i from 0 to (- n 2) do
+	  (setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+								(aref array (+ i 1) 0)))))
+	
+	(loop for j from 0 to (- m 2) do
+	  (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+							      (aref array 0 (+ j 1))))))
+	
+	
+	(when (<= k m)
+	  (loop for i from 0 to (- n 2) do
+	    (loop for j from 1 to (1- m) do
+	      (setf (aref cost-array-horizontal i j) (the fixnum (+ (aref array i j)
+								    (aref array (1+ i) j)
+								    (aref cost-array-horizontal i (1- j))))))))
+	;;(format t "array custo horizontal: ~a~%" cost-array-horizontal)
+
+	(when (<= k n)
+	  (loop for j from 0 to (- m 2) do
+	    (loop for i from 1 to (- n 1) do
+	      (setf (aref cost-array-vertical i j) (the fixnum (+ (aref array i j)
+								  (aref array i (+ j 1))
+								  (aref cost-array-vertical (1- i) j)))))))
+	;;(format t "array custo vertical: ~a~%" cost-array-vertical)
+	(when (<= k m)
+	  (loop  for i from 0 to (- n 2) do
+	    (loop for j from (- k 1) to (1- m) do
+	      (let ((sum (the fixnum (if (< (- j k) 0)
+					 (aref cost-array-horizontal i j)
+					 (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
+		(when (< sum min)
+		  (setf min sum))))))
+	(when (<= k n)
+	  (loop  for j from 0 to (- m 2) do
+	    (loop for i from (- k 1) to (- n 1) do
+	      (let ((sum (the fixnum (if (< (- i k) 0)
+					 (aref cost-array-vertical i j)
+					 (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
+		(when (< sum min)
+		  (setf min sum))))))
+	(if (and (> k n)
+		 (> k m))
+	    (format t "~a~%" -1)
+	    (format t "~a~%" min))
+	))))
+
+(with-open-file (in "paint-walls.data" :direction :input)
+  (let* ((number-of-tests (read in)))
+    (declare (optimize (safety 3)))
+    (dotimes (tests number-of-tests)
+      (let* ((n (read in))
+	     (m (read in))
+	     (k (read in))
+	     (array (make-array (list n m) :element-type '(signed-byte 62)))
+	     (cost-array-horizontal (make-array (list n m) :element-type '(signed-byte 62)))
+	     (cost-array-vertical (make-array (list n m) :element-type '(signed-byte 62)))
+	     (min most-positive-fixnum))
+	(declare (type (array (signed-byte 62) *) array cost-array-horizontal cost-array-vertical))
+
+	(format t "n: ~a m: ~a k: ~a~%" n m k)
+	;;carrega array
+	(dotimes (i n)
+	  (dotimes (j m)
+	    (the (signed-byte 62) (setf (aref array i j) (the fixnum (read in))))))
+	(format t "~a~%" array)
+
+	;;calcula custo de arrays vertical e horizontal
+	(when (<= k m)
+	  (loop for i from 0 to (- n 2) do
+	    (setf (aref cost-array-horizontal i 0) (the fixnum (+ (aref array i 0)
+								  (aref array (+ i 1) 0))))
+	    (loop for j from 1 to (1- m) do
+	      (setf (aref cost-array-horizontal i j) (+ (aref array i j)
+							(aref array (1+ i) j)
+							(aref cost-array-horizontal i (1- j)))))))
+	(when (<= k n)
+	  (loop for j from 0 to (- m 2) do
+	    (setf (aref cost-array-vertical 0 j) (the fixnum (+ (aref array 0 j )
+								(aref array 0 (+ j 1)))))
+	    (loop for i from 1 to (- n 1) do
+	      (setf (aref cost-array-vertical i j) (+ (aref array i j)
+						      (aref array i (+ j 1))
+						      (aref cost-array-vertical (1- i) j))))))
+	(format t "~a~%~a~%" cost-array-horizontal cost-array-vertical)
+	(when (<= k m)
+	  (loop  for i from 0 to (- n 2) do
+	    (loop for j from (- k 1) to (1- m) do
+	      (let ((sum (the fixnum (if (< (- j k) 0)
+					 (aref cost-array-horizontal i j)
+					 (- (aref cost-array-horizontal i j) (aref cost-array-horizontal i (- j k)))))))
+		(when (< sum min)
+		  (setf min sum))))))
+	(when (<= k n)
+	  (loop  for j from 0 to (- m 2) do
+	    (loop for i from (- k 1) to (- n 1) do
+	      (let ((sum (the fixnum (if (< (- i k) 0)
+					 (aref cost-array-vertical i j)
+					 (- (aref cost-array-vertical i j) (aref cost-array-vertical (- i k) j))))))
+		(when (< sum min)
+		  (setf min sum))))))
+	(if (and (> k n)
+		 (> k m))
+	    (format t "~a~%" -1)
+	    (format t "~a~%" min))
+
+	))))
+
+(upgraded-array-element-type '(integer))
+(non-opt-sum testes)
+
+(make-array '(99 9) :initial-contents 2)
+
+
+
+(defun solve-x (d &aux (x 1) (y 1))
+  (declare (optimize (speed 3) (safety 0) (debug 0))
+           (type fixnum d x y))
+  (loop with foo of-type fixnum = 1
+        with bar of-type fixnum = d
+        for quux of-type fixnum = (- foo bar)
+        while (/= quux 1)
+        do (if (> quux 1)
+               (setf bar (+ bar (the fixnum (* d y)))
+                     y (1+ y)
+                     bar (+ bar (the fixnum (* d y))))
+               (setf foo (+ foo x)
+                     x (1+ x)
+                     foo (+ foo x))))
+  (list x y))
