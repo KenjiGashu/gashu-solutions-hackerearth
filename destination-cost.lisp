@@ -59,7 +59,7 @@
 (defparameter *tree* '())
 (defparameter *tree-instance* (make-instance 'arvore))
 (setf (slot-value *tree-instance* 'valor) (cons 10 (slot-value *tree-instance* 'valor)))
-(setf (slot-value *tree-instance* 'direita) (make-instance 'arvore :valor '(50) :direita (make-instance 'arvore :valor '(100))))
+(setf (slot-value *tree-instance* 'direita) (make-instance 'arvore :valor '(50) :esquerda (make-instance 'arvore :valor '(25))))
 (defparameter *temp*
   (with-accessors ((direita direita) (valor valor) (peso peso)) *tree-instance*
     (let ((filho-direito direita))
@@ -70,11 +70,22 @@
 	(format t "temp: ~a~%" temp)))
     filho-direito)))
 
-(insert-tree *temp* 75)
+(defparameter *temp* (balance-tree *tree-instance*))
+(slot-value (slot-value *temp* 'esquerda) 'direita)
+(slot-value *temp* 'direita)
+
+(slot-value (slot-value *tree-instance* 'esquerda) 'direita)
+(slot-value (slot-value *tree-instance* 'direita) 'esquerda)
+(slot-value *tree-instance* 'direita)
+
+
+(insert-tree *temp* 80)
 
 (with-accessors ((esquerda esquerda) (direita direita) (valor valor)) *temp*
-  (with-accessors ((eval valor)) direita
-    eval))
+  (with-accessors ((eval valor)) esquerda
+    (with-accessors ((direita-esquerda esquerda) (valorzim valor)) direita
+	valor)
+    ))
 
 (with-accessors ((direita direita)) *tree-instance*
   (with-accessors ((direita-esquerda direita)) direita
@@ -130,8 +141,8 @@
 	  (with-accessors ((ded direita) (dee esquerda)) direita-esquerda
 	    (if (< (slot-value direita 'peso) 0)
 		(let ((nova-raiz direita-esquerda))
-		  (setf ded direita)
 		  (setf direita-esquerda ded)
+		  (setf ded direita)
 		  (setf direita dee)
 		  (setf dee tree)
 		  nova-raiz)
