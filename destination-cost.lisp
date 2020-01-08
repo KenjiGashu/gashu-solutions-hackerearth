@@ -4,6 +4,8 @@
 
 (in-package :com.gashu.kenji.destination-cost)
 
+(declaim (optimize (debug 3)))
+
 (defun my-split (string &key (delimiterp #'delimiterp))
   (loop :for beg = (position-if-not delimiterp string)
 	  :then (position-if-not delimiterp string :start (1+ end))
@@ -16,7 +18,6 @@
 
 (defparameter cities (parse-integer (read-line)))
 
-(let* ((cars-cost (mapcar #'parse-integer (my-split (read-line) :delimiterp (lambda (c) (char= c #\Space)))))))
 
 (defun solve (cities cars-cost bus-cost step answer total-cost)
   (if (< step cities)
@@ -56,48 +57,9 @@
     :initform '()
     :initarg :valor)))
 
-(defparameter *tree* '())
-(defparameter *tree-instance* (make-instance 'arvore))
-(setf (slot-value *tree-instance* 'valor) (cons 10 (slot-value *tree-instance* 'valor)))
-(setf (slot-value *tree-instance* 'direita) (make-instance 'arvore :valor '(50) :direita (make-instance 'arvore :valor '(100))))
-(defparameter *temp*
-  (with-accessors ((direita direita) (valor valor) (peso peso)) *tree-instance*
-    (let ((filho-direito direita))
-      (with-accessors ((direita-direita direita) (direita-esquerda esquerda)) direita
-      (let ((temp direita-esquerda))
-	(setf direita-esquerda *tree-instance*)
-	(setf direita temp)
-	(format t "temp: ~a~%" temp)))
-    filho-direito)))
-
-(insert-tree *temp* 75)
-
-(with-accessors ((esquerda esquerda) (direita direita) (valor valor)) *temp*
-  (with-accessors ((eval valor)) direita
-    eval))
-
-(with-accessors ((direita direita)) *tree-instance*
-  (with-accessors ((direita-esquerda direita)) direita
-    (setf direita-esquerda *tree-instance*)))
-
-
-(with-accessors ((direita direita)) *tree-instance*
-  (with-accessors ((direita-esquerda direita)) direita
-    (slot-value direita-esquerda 'valor)))
-
-(with-slots (direita esquerda valor) *tree-instance*
-  (format t "~a~% ~a  ~%" valor (slot-value direita 'valor)))
-
-(with-slots (direita esquerda valor) *tree-instance*
-  direita)
-
-(with-slots (direita esquerda valor) *temp*
-  (format t "~a~% ~a  ~a ~%" valor (slot-value esquerda 'valor) (slot-value direita 'valor)))
-
-(with-slots (direita esquerda valor) *temp*
-  esquerda)
-
-
+(defmethod print-object ((obj arvore) out)
+  (print-unreadable-object (obj out :type t)
+    (format out "V:~a W:~a L:~:[NIL~;Branch~] R:~:[NIL~;Branch~]" (valor obj) (peso obj) (esquerda obj) (direita obj))))
 
 (defgeneric tree-contents (tree))
 (defmethod tree-contents ((tree arvore))
@@ -110,36 +72,39 @@
 (defgeneric balance-tree (tree))
 (defmethod balance-tree ((tree arvore))
   (with-accessors ((esquerda esquerda) (direita direita) (peso peso) (valor valor)) tree
-    (if (> (abs peso) 1)
-	(with-accessors ((esquerda-direita direita) (esquerda-esquerda esquerda)) esquerda
-	  (with-accessors ((ede esquerda) (edd direita)) esquerda-direita
-	    (if (> (slot-value esquerda 'peso) 0)
-		(let ((nova-raiz esquerda-direita))
-		  (setf ede esquerda)
-		  (setf esquerda-direita edd)
-		  (setf esquerda edd)
-		  (setf edd tree)
-		  nova-raiz)
-		(let ((nova-raiz esquerda)
-		      (temp esquerda-direita))
-		  (setf esquerda esquerda-direita)
-		  (setf esquerda-direita tree)
-		  nova-raiz))))
-	
-	(with-accessors ((direita-esquerda esquerda)) direita
-	  (with-accessors ((ded direita) (dee esquerda)) direita-esquerda
-	    (if (< (slot-value direita 'peso) 0)
-		(let ((nova-raiz direita-esquerda))
-		  (setf ded direita)
-		  (setf direita-esquerda ded)
-		  (setf direita dee)
-		  (setf dee tree)
-		  nova-raiz)
-		(let ((nova-raiz direita)
-		      (temp direita-esquerda))
-		  (setf direita-esquerda tree)
-		  (setf direita temp)
-		  nova-raiz)))))))
+    (cond ((> peso 1)
+	   (with-accessors ((esquerda-direita direita) (esquerda-esquerda esquerda)) esquerda
+	     (with-accessors ((ede esquerda) (edd direita)) esquerda-direita
+	       (if (< (peso esquerda) 0)
+		   (let ((nova-raiz esquerda-direita))
+		     (break)
+		     (setf ede esquerda)
+		     (setf esquerda-direita edd)
+		     (setf esquerda edd)
+		     (setf edd tree)
+		     nova-raiz)
+		   (let ((nova-raiz esquerda)
+			 (temp esquerda-direita))
+		     (setf esquerda esquerda-direita)
+		     (setf esquerda-direita tree)
+		     nova-raiz)))))
+	  
+	  ((< peso -1)
+	   (with-accessors ((direita-esquerda esquerda)) direita
+	     (with-accessors ((ded direita) (dee esquerda)) direita-esquerda
+	       (if (> (slot-value direita 'peso) 0)
+		   (let ((nova-raiz direita-esquerda))
+		     (break)
+		     (setf direita-esquerda ded)
+		     (setf ded direita)
+		     (setf direita dee)
+		     (setf dee tree)
+		     nova-raiz)
+		   (let ((nova-raiz direita)
+			 (temp direita-esquerda))
+		     (setf direita-esquerda tree)
+		     (setf direita temp)
+		     nova-raiz))))))))
 
 (defgeneric insert-tree (tree val))
 (defmethod insert-tree ((tree arvore) val)
@@ -221,52 +186,5 @@ Always returns two values:
       (cond ((> val (value-tree tree)) (make-tree (leaf-val tree) (left-branch tree) (pop-value (right-branch tree) val)))
 	    ((< val (value-tree tree)) (make-tree (leaf-val tree) (pop-value (left-branch tree) val) (right branch-tree)))
 	    (t (values (value-tree tree) tree)))))
-(cons 2 (list 2))
-(list 2 2 )
-(clear-tree )
-
-(defparameter *teste-tree* '())
-(setf *teste-tree* (insert-tree *teste-tree* 2))
-(setf *teste-tree* (insert-tree *teste-tree* -5))
-(setf *teste-tree* (insert-tree *teste-tree* 10))
-(setf *teste-tree* (insert-tree *teste-tree* 15))
-(setf *teste-tree* (insert-tree *teste-tree* 7))
-(setf *teste-tree* (insert-tree *teste-tree* 3))
-(setf *teste-tree* (insert-tree *teste-tree* -8))
-
-(make-tree 2 '() '())
-
-(value-tree (make-tree 2 '() '()))
-(left-branch (make-tree 2 '() '()))
-(right-branch (make-tree 2 '() '()))
-
-(insert-tree (make-tree 2 '() '()) 3)
-
-(right-branch (insert-tree (make-tree 2 '() '()) 3))
-
-(time (with-open-file (in "destination-cost3.data" :direction :input)
-	 (let* ((cities (parse-integer (read-line in)))
-		;;(cars-cost (mapcar #'parse-integer (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
-		;;(bus-cost (mapcar #'parse-integer (my-split (read-line in) :delimiterp (lambda (c) (char= c #\Space)))))
-		(cars-cost (make-array (list cities) :element-type :integer))
-		(bus-cost (make-array (list cities) :element-type :integer))
-		(min nil))
-	   (format t "number of cities: ~a~%" cities)
-	   (dotimes (i cities)
-	     (let ((number (read in)))
-	       ;;(format t "read-number: ~a~%" number)
-	       (setf (aref cars-cost i) number)))
-	   (dotimes (i cities)
-	     (setf (aref bus-cost i) (read in)))
-					;(format t "cities: ~a cars-cost: ~a bus-cost: ~a~%" cities cars-cost bus-cost)
-	   ;;(format t "cars: ~a~%~%" cars-cost)
-	   ;;(format t "bus: ~a~%~%" bus-cost)
-	   (format t "~a~%" (solve2 cities cars-cost bus-cost 0 '() 0))
-	   )))
-	   ;;)))
 
 
-
-(with-open-file (in "destination-cost2.data" :direction :input)
-  (dotimes (i 20)
-    (format t "~a~%" (read in))))
