@@ -60,6 +60,59 @@
 (defmethod print-object ((obj arvore) out)
   (print-unreadable-object (obj out :type t)
     (format out "V:~a W:~a L:~:[NIL~;Branch~] R:~:[NIL~;Branch~]" (valor obj) (peso obj) (esquerda obj) (direita obj))))
+(defparameter *tree* '())
+(defparameter *tree-instance* (make-instance 'arvore))
+(setf (slot-value *tree-instance* 'valor) (cons 10 (slot-value *tree-instance* 'valor)))
+(setf (slot-value *tree-instance* 'direita) (make-instance 'arvore :valor '(50) :esquerda (make-instance 'arvore :valor '(25))))
+(defparameter *temp*
+  (with-accessors ((direita direita) (valor valor) (peso peso)) *tree-instance*
+    (let ((filho-direito direita))
+      (with-accessors ((direita-direita direita) (direita-esquerda esquerda)) direita
+      (let ((temp direita-esquerda))
+	(setf direita-esquerda *tree-instance*)
+	(setf direita temp)
+	(format t "temp: ~a~%" temp)))
+    filho-direito)))
+
+(defparameter *temp* (balance-tree *tree-instance*))
+(slot-value (slot-value *temp* 'esquerda) 'direita)
+(slot-value *temp* 'direita)
+
+(slot-value (slot-value *tree-instance* 'esquerda) 'direita)
+(slot-value (slot-value *tree-instance* 'direita) 'esquerda)
+(slot-value *tree-instance* 'direita)
+
+
+(insert-tree *temp* 80)
+
+(with-accessors ((esquerda esquerda) (direita direita) (valor valor)) *temp*
+  (with-accessors ((eval valor)) esquerda
+    (with-accessors ((direita-esquerda esquerda) (valorzim valor)) direita
+	valor)
+    ))
+
+(with-accessors ((direita direita)) *tree-instance*
+  (with-accessors ((direita-esquerda direita)) direita
+    (setf direita-esquerda *tree-instance*)))
+
+
+(with-accessors ((direita direita)) *tree-instance*
+  (with-accessors ((direita-esquerda direita)) direita
+    (slot-value direita-esquerda 'valor)))
+
+(with-slots (direita esquerda valor) *tree-instance*
+  (format t "~a~% ~a  ~%" valor (slot-value direita 'valor)))
+
+(with-slots (direita esquerda valor) *tree-instance*
+  direita)
+
+(with-slots (direita esquerda valor) *temp*
+  (format t "~a~% ~a  ~a ~%" valor (slot-value esquerda 'valor) (slot-value direita 'valor)))
+
+(with-slots (direita esquerda valor) *temp*
+  esquerda)
+
+
 
 (defgeneric tree-contents (tree))
 (defmethod tree-contents ((tree arvore))
@@ -105,7 +158,6 @@
 		     (setf direita-esquerda tree)
 		     (setf direita temp)
 		     nova-raiz))))))))
-
 (defgeneric insert-tree (tree val))
 (defmethod insert-tree ((tree arvore) val)
   (with-accessors ((valor valor) (peso peso) (esquerda esquerda) (direita direita)) tree
