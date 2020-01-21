@@ -27,7 +27,9 @@
 (defun make-node (key value left right)
   "Binary tree node with association and branches."
   (make-instance
-   'avl-tree :node-key key :node-value value
+   'avl-tree :node-key key :node-value (if (listp value)
+					   value
+					   (list value))
    :left-child left :right-child right :weight 0))
 
 (defgeneric tree-height (tree))
@@ -115,15 +117,17 @@
   "Add an association from KEY to VALUE in TREE."
   (avl-node
    (node-key tree)
-   (node-value tree)
+   (if (equalp key (node-key tree))
+       (cons value (node-value tree))
+       (node-value tree))
    (if (lessp key (node-key tree))
        (insert key value
                (left-child tree))
        (left-child tree))
-   (if (lessp key (node-key tree))
-       (right-child tree)
+   (if (lessp (node-key tree) key)
        (insert key value
-               (right-child tree)))))
+               (right-child tree))
+       (right-child tree))))
 
 (defgeneric lookup (key tree))
 
@@ -142,16 +146,25 @@
                (append (lookup key left)
                        (lookup key right)))))))
 
-;; (defvar *word-map*)
-;; (setq *word-map* nil)
+(defmethod print-object ((obj avl-tree) out)
+  (print-unreadable-object (obj out :type t)
+    (format out "K:~a V:~a L:~:[NIL~;Branch~] R:~:[NIL~;Branch~]" (node-key obj) (node-value obj) (left obj) (right obj))))
 
-;; (mapc (lambda (word)
-;;         (setq *word-map*
-;;               (insert (length word)
-;;                       word
-;;                       *word-map*)))
-;;       '("hey" "goodbye" "hello"
-;;         "hi" "world" "greetings"))
+(defparameter *word-map* nil)
+(setq *word-map* nil)
 
+(mapc (lambda (word)
+        (setq *word-map*
+              (insert (length word)
+                      word
+                      *word-map*)))
+      '("hey" "goodbye" "hello"
+        "hi" "world" "greetings"
+	"amskd" "mmsnn"))
 
-;; (lookup 5 *word-map*)
+(node-value *word-map*)
+
+(node-key *word-map*)
+
+(lookup 5 *word-map*)
+
