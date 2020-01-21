@@ -146,9 +146,33 @@
                (append (lookup key left)
                        (lookup key right)))))))
 
+(defgeneric pop-least (tree))
+
+(defmethod pop-least ((tree null))
+  nil)
+
+(defmethod pop-least ((tree avl-tree))
+  (with-slots ((node-key key) value left right) tree
+    (if (null left)
+	(if (> (length value) 1)
+	    (values (avl-node
+		     node-key
+		     (cdr value)
+		     left
+		     right)
+		    (car value))
+	    (values right
+		    (car value)))
+	(multiple-value-bind (child ret) (pop-least left)
+	  (values (avl-node node-key
+			    value
+			    child
+			    right)
+		  ret)))))
+
 (defmethod print-object ((obj avl-tree) out)
   (print-unreadable-object (obj out :type t)
-    (format out "K:~a V:~a L:~:[NIL~;Branch~] R:~:[NIL~;Branch~]" (node-key obj) (node-value obj) (left obj) (right obj))))
+    (format out "K:~a V:~a L:~:[NIL~;Branch~] R:~:[NIL~;Branch~]" (node-key obj) (node-value obj) (left-child obj) (right-child obj))))
 
 (defparameter *word-map* nil)
 (setq *word-map* nil)
@@ -162,9 +186,22 @@
         "hi" "world" "greetings"
 	"amskd" "mmsnn"))
 
+(setf *word-map* (insert 3 "hey" *word-map*))
+(setf *word-map* (insert 1 "h" *word-map*))
+(setf *word-map* (insert 5 "heyus" *word-map*))
+(setf *word-map* (insert 7 "heyksjd" *word-map*))
+
+(tree-height *word-map*)
+
 (node-value *word-map*)
 
 (node-key *word-map*)
+(left-child (left-child (left-child *word-map*)))
+
+(pop-least *word-map*)
+(multiple-value-bind (tree ret) (pop-least *word-map*)
+  (setf *word-map* tree)
+  (format t "~a ~a ~%" ret tree))
 
 (lookup 5 *word-map*)
 
