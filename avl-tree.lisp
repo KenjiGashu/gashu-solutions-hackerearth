@@ -60,7 +60,7 @@
 (defmethod rotate-left ((node avl-tree))
   "Return TREE rotated left."
   (with-slots (key value height left right) node
-    (avl-node
+    (make-node
      (node-key right)
      (node-value right)
      (avl-node key value
@@ -72,7 +72,7 @@
 (defmethod rotate-right ((node avl-tree))
   "Return TREE rotated right."
   (with-slots (key value height left right) node
-    (avl-node
+    (make-node
      (node-key left)
      (node-value left)
      (left-child left)
@@ -91,14 +91,14 @@
          (:left-heavy
           (rotate-right node))
          (:right-heavy
-          (avl-node key value
-                    (rotate-left left) right))))
+          (rotate-right (make-node key value
+				   (rotate-left left) right)))))
 
       (:imbalanced-right
        (ecase (balance-factor right)
          (:left-heavy
-          (avl-node key value
-                    left (rotate-right right)))
+          (rotate-left (make-node key value
+				  left (rotate-right right))))
          (:right-heavy
           (rotate-left node)))))))
 
@@ -205,3 +205,14 @@
 
 (lookup 5 *word-map*)
 
+(with-open-file (in "destination-cost2.data" :direction :input)
+  (let* ((cities (read in))
+	 (difference-cost-tree nil))
+      ;;initialize bus-cost and difference cost tree
+      (loop for i from 0 upto (1- cities) do
+	(let* ((val (read in)))
+	  (setf difference-cost-tree (insert val val difference-cost-tree)))
+	
+	    )
+    (format t "~a~%" difference-cost-tree)
+      ))

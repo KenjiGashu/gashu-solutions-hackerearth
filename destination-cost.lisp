@@ -6,7 +6,6 @@
 
 (declaim (optimize (debug 3)))
 
-
 (defclass avl-tree ()
   ((key
     :initarg :node-key
@@ -59,7 +58,7 @@
 (defmethod rotate-left ((node avl-tree))
   "Return TREE rotated left."
   (with-slots (key value height left right) node
-    (avl-node
+    (make-node
      (node-key right)
      (node-value right)
      (avl-node key value
@@ -71,7 +70,7 @@
 (defmethod rotate-right ((node avl-tree))
   "Return TREE rotated right."
   (with-slots (key value height left right) node
-    (avl-node
+    (make-node
      (node-key left)
      (node-value left)
      (left-child left)
@@ -80,10 +79,7 @@
 
 (defun avl-node (key value &optional left right)
   "Balanced AVL tree node."
-  (let* ((node (make-node key value left right))
-	 (balance (balance-factor node))
-	 (balance-left (balance-factor left))
-	 (balance-right (balance-factor right)))
+  (let* ((node (make-node key value left right)))
     (ecase (balance-factor node)
       ((:left-heavy :balanced :right-heavy)
        node)
@@ -92,15 +88,19 @@
        (ecase (balance-factor left)
          (:left-heavy
           (rotate-right node))
+	 (:balanced
+	  (rotate-right node))
          (:right-heavy
-          (avl-node key value
-                    (rotate-left left) right))))
+          (rotate-right (make-node key value
+				   (rotate-left left) right)))))
 
       (:imbalanced-right
        (ecase (balance-factor right)
          (:left-heavy
-          (avl-node key value
-                    left (rotate-right right)))
+          (rotate-left (make-node key value
+				   left (rotate-right right))))
+	 (:balanced
+	  (rotate-left node))
          (:right-heavy
           (rotate-left node)))))))
 
@@ -154,15 +154,21 @@
 (defmethod pop-least ((tree avl-tree))
   (with-slots ((node-key key) value left right) tree
     (if (null left)
-	(if (> (length value) 1)
-	    (values (avl-node
-		     node-key
-		     (cdr value)
-		     left
-		     right)
-		    (car value))
-	    (values right
-		    (car value)))
+	(if (listp value)
+	    (if (> (length value) 1)
+		(values (avl-node
+			 node-key
+			 (cdr value)
+			 left
+			 right)
+			(car value))
+		(multiple-value-bind (child ret) (pop-least right)
+		  (values (avl-node node-key
+				    value
+				    child
+				    right)
+			  ret)))
+	    (values right value))
 	(multiple-value-bind (child ret) (pop-least left)
 	  (values (avl-node node-key
 			    value
@@ -187,7 +193,7 @@
 ;; (defparameter cities (parse-integer (read-line)))
 
 (defun solve ()
-(let* ((cities (read))
+  (let* ((cities (read))
 	   (cars-cost (make-array (list cities) :element-type 'fixnum))
 	   (bus-cost (make-array (list cities) :element-type 'fixnum))
 	   (difference-cost-tree nil)
@@ -228,12 +234,23 @@
       )
   )
 
+(defparameter *gtree* nil)
+
+;; (defun merge (array start half end)
+;;   (let* ()))
+
+(defun merge-sort (array, start, end)
+  (let* ((half (/ (+ start end) 2)))
+    (merge-sort array start half)
+    (merge-sort array half end)
+    (merge array start half end)))
 
 (defun solve-from-file ()
   (with-open-file (in "destination-cost2.data" :direction :input)
     (let* ((cities (read in))
 	   (cars-cost (make-array (list cities) :element-type 'fixnum))
 	   (bus-cost (make-array (list cities) :element-type 'fixnum))
+	   (dif-cost (make-array (list cities) :element-type 'fixnum))
 	   (difference-cost-tree nil)
 	   (total-car 0)
 	   (total-bus 0)
@@ -252,7 +269,9 @@
 	       ;;only add to cost tree when they have different costs
 	       (unless (= car
 			  bus)
-		 (setf difference-cost-tree (insert dif dif difference-cost-tree)))
+		 (setf (aref dif-cost i) dif)
+		 ;;(setf *gtree* (insert dif dif *gtree*))
+		 )
 
 	  ;;adds min between car and busm when they are the same, dont add to count
 
@@ -262,10 +281,11 @@
 					    bus))
 			(t car))))))
 
-      (loop for i from 0 upto (- (abs (- total-car total-bus)) 2) do
-	(multiple-value-bind (tree ret) (pop-least difference-cost-tree)
-	  (setf resp (+ resp ret))
-	  (setf difference-cost-tree tree)))
+      ;; (setf difference-cost-tree *gtree*)
+      ;; (loop for i from 0 upto (- (abs (- total-car total-bus)) 2) do
+      ;; 	(multiple-value-bind (tree ret) (pop-least *gtree*)
+      ;; 	  (setf resp (+ resp ret))
+      ;; 	  (setf *gtree* tree)))
       (format t "~a~%" resp)
       )))
 
