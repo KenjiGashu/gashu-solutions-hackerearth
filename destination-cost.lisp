@@ -270,8 +270,6 @@
 	  )
     merged))
 
-(merge-sort #(5 10 2 8))
-
 (defun merge-sort (array)
   (labels ((internal-merge-sort (array start end)
 	     (if (= start end)
@@ -280,12 +278,12 @@
 			(left (internal-merge-sort array start half))
 			(right (internal-merge-sort array (1+ half) end)))
 		   (merge-sort-merge left right)))))
-    (internal-merge-sort array 0 (1- (array-dimension array 0)))))
+    (internal-merge-sort array 0 (1- (fill-pointer array)))))
 
 
 
 (defun solve-from-file ()
-  (with-open-file (in "destination-cost2.data" :direction :input)
+  (with-open-file (in "destination-cost.data" :direction :input)
     (let* ((cities (read in))
 	   (cars-cost (make-array (list cities) :element-type 'fixnum))
 	   (bus-cost (make-array (list cities) :element-type 'fixnum))
@@ -327,32 +325,35 @@
       ;; 	  (setf *gtree* tree)))
       (format t "~a~%" resp)
       )))
+(defun solve ()
 
-(defun solve-from-file2 ()
-  (with-open-file (in "destination-cost2.data" :direction :input)
-    (let* ((cities (read in))
+    (let* ((cities (read))
 	   (cars-cost (make-array (list cities) :element-type 'fixnum))
 	   (bus-cost (make-array (list cities) :element-type 'fixnum))
-	   (dif-cost (make-array (list cities) :element-type 'fixnum :adjustable t :fill-pointer 0))
+	   (dif-to-car-cost (make-array (list cities) :element-type 'fixnum :adjustable t :fill-pointer 0))
+	   (dif-to-bus-cost (make-array (list cities) :element-type 'fixnum :adjustable t :fill-pointer 0))
 	   (difference-cost-tree nil)
 	   (total-car 0)
 	   (total-bus 0)
 	   (resp 0))
       ;;initialize cars-cost
-      (loop for i from 0 upto (1- cities) do
-	(setf (aref cars-cost i) (the fixnum (read in))))
+      (loop for i from 0 to (1- cities) do
+	(setf (aref cars-cost i) (the fixnum (read))))
 
       ;;initialize bus-cost and difference cost tree
-      (loop for i from 0 upto (1- cities) do
+      (loop for i from 0 to (1- cities) do
 	(let* ((car (aref cars-cost i))
-	       (bus (setf (aref bus-cost i) (the fixnum (read in))))
+	       (bus (setf (aref bus-cost i) (the fixnum (read))))
 	       (dif (abs (- car bus))))
 	  ;;(declare (type fixnum car bus dif))
 
 	  ;;only add to cost tree when they have different costs
 	  (unless (= car
 		     bus)
-	    (vector-push dif dif-cost)
+	    (if (> car bus)
+		(vector-push dif dif-to-car-cost)
+		(vector-push dif dif-to-bus-cost))
+	    
 	    ;;(setf *gtree* (insert dif dif *gtree*))
 	    )
 
@@ -363,11 +364,70 @@
 				   ((< bus car) (progn (setf total-bus (1+ total-bus))
 						       bus))
 				   (t car))))))
-
-      (setf dif-cost (merge-sort dif-cost)) 
-      (loop for i from 0 to (abs (- total-car total-bus))
+      (setf dif-to-car-cost (merge-sort dif-to-car-cost)) 
+      (setf dif-to-bus-cost (merge-sort dif-to-bus-cost))
+      (loop repeat (- (floor (/ cities 2)) (min total-bus total-car))
+	    for i = 0 then (1+ i)
 	    do
-	       (setf resp (+ resp (aref dif-cost i))))
+	       (if (> total-bus total-car)
+		   (setf resp (+ resp (aref dif-to-car-cost i)))
+		   (setf resp (+ resp (aref dif-to-bus-cost i)))))
+      ;; (setf difference-cost-tree *gtree*)
+      ;; (loop for i from 0 upto (- (abs (- total-car total-bus)) 2) do
+      ;; 	(multiple-value-bind (tree ret) (pop-least *gtree*)
+      ;; 	  (setf resp (+ resp ret))
+      ;; 	  (setf *gtree* tree)))
+      (format t "~a~%" resp)
+      ))
+(defun solve-from-file2 ()
+  (with-open-file (in "destination-cost4.data" :direction :input)
+    (let* ((cities (read in))
+	   (cars-cost (make-array (list cities) :element-type 'fixnum))
+	   (bus-cost (make-array (list cities) :element-type 'fixnum))
+	   (dif-to-car-cost (make-array (list cities) :element-type 'fixnum :adjustable t :fill-pointer 0))
+	   (dif-to-bus-cost (make-array (list cities) :element-type 'fixnum :adjustable t :fill-pointer 0))
+	   (difference-cost-tree nil)
+	   (total-car 0)
+	   (total-bus 0)
+	   (resp 0))
+      ;;initialize cars-cost
+      (loop for i from 0 to (1- cities) do
+	(setf (aref cars-cost i) (the fixnum (read in))))
+
+      ;;initialize bus-cost and difference cost tree
+      (loop for i from 0 to (1- cities) do
+	(let* ((car (aref cars-cost i))
+	       (bus (setf (aref bus-cost i) (the fixnum (read in))))
+	       (dif (abs (- car bus))))
+	  ;;(declare (type fixnum car bus dif))
+
+	  ;;only add to cost tree when they have different costs
+	  (unless (= car
+		     bus)
+	    (if (> car bus)
+		(vector-push dif dif-to-car-cost)
+		(vector-push dif dif-to-bus-cost))
+	    
+	    ;;(setf *gtree* (insert dif dif *gtree*))
+	    )
+
+	  ;;adds min between car and busm when they are the same, dont add to count
+
+	  (setf resp (+ resp (cond ((< car bus) (progn (setf total-car (1+ total-car))
+						       car))
+				   ((< bus car) (progn (setf total-bus (1+ total-bus))
+						       bus))
+				   (t car))))))
+      (setf dif-to-car-cost (merge-sort dif-to-car-cost)) 
+      (setf dif-to-bus-cost (merge-sort dif-to-bus-cost))
+      (format t "total-car: ~a total-bus: ~a~% to-car: ~a to-bus: ~a ~%" total-car total-bus dif-to-car-cost dif-to-bus-cost)
+
+      (loop repeat (- (floor (/ cities 2)) (min total-bus total-car))
+	    for i = 0 then (1+ i)
+	    do
+	       (if (> total-bus total-car)
+		   (setf resp (+ resp (aref dif-to-car-cost i)))
+		   (setf resp (+ resp (aref dif-to-bus-cost i)))))
       ;; (setf difference-cost-tree *gtree*)
       ;; (loop for i from 0 upto (- (abs (- total-car total-bus)) 2) do
       ;; 	(multiple-value-bind (tree ret) (pop-least *gtree*)
@@ -375,6 +435,7 @@
       ;; 	  (setf *gtree* tree)))
       (format t "~a~%" resp)
       )))
+
 
 (defun solve2 ()
   (let* ((cities (read))
@@ -412,8 +473,10 @@
 	 			 (t car))))
 	))
 
+    
+
     (setf dif-cost (merge-sort dif-cost)) 
-    (loop for i from 0 to (- (abs (- total-car total-bus)) 2)
+    (loop for i from 0 to (1- (floor (/ cities 2)))
 	  do
 	     (setf resp (+ resp (aref dif-cost i))))
     ;; (setf difference-cost-tree *gtree*)
