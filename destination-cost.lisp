@@ -280,6 +280,35 @@
 		   (merge-sort-merge left right)))))
     (internal-merge-sort array 0 (1- (fill-pointer array)))))
 
+(defun tail-recursive-mergesort (array)
+  (labels ((internal-merge-sort (array size result-array fpointer)
+	     (if (>= size (array-dimension array 0))
+		 result-array
+		 (let* ((len (array-dimension array 0)))
+		   (loop for i from 0 to (1- len) do
+			 )))
+	     ))))
+
+(defun tail-recursive-merge (array start1 end1 start2 end2)
+  (let* ((len (* (- end1 start1) 2))
+	 (copia (copy-array array))
+	 (i start1)
+	 (j start2))
+    (labels ((recursive-merge (array copy point cur1 end1 cur2 end2)
+	       (if (and (<= end1 cur1)
+			(<= end2 cur2))
+		   array
+		   (if (>= end1 cur1)
+		       (progn (setf (aref array point) (aref copy cur2))
+			      (recursive-merge array copy (1+ point) cur1 end1 (1+ cur2) end2))
+		       (if (>= end2 cur2)
+			   (progn (setf (aref array point) (aref copy cur1))
+				  (recursive-merge array copy (1+ point) (1+ cur1) end1 cur2 end2))
+			   (if (> (aref copy cur1)
+				  (aref copy cur2))
+				  (recursive-merge array copy (1+ point) cur1 end1 (1+ cur2) end2)
+				  (recursive-merge array copy (1+ point) (1+ cur1) end1 cur2 end2))))))))))
+
 
 
 (defun solve-from-file ()
