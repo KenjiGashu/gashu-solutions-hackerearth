@@ -280,36 +280,81 @@
 		   (merge-sort-merge left right)))))
     (internal-merge-sort array 0 (1- (fill-pointer array)))))
 
+(defun copy-array (array &key
+                   (element-type (array-element-type array))
+                   (fill-pointer (and (array-has-fill-pointer-p array)
+                                      (fill-pointer array)))
+                   (adjustable (adjustable-array-p array)))
+  "Returns an undisplaced copy of ARRAY, with same fill-pointer and
+adjustability (if any) as the original, unless overridden by the keyword
+arguments."
+  (let* ((dimensions (array-dimensions array))
+         (new-array (make-array dimensions
+                                :element-type element-type
+                                :adjustable adjustable
+                                :fill-pointer fill-pointer)))
+    (dotimes (i (array-total-size array))
+      (setf (row-major-aref new-array i)
+            (row-major-aref array i)))
+    new-array))
+
+
 (defun tail-recursive-mergesort (array)
-  (labels ((internal-merge-sort (array size result-array fpointer)
-	     (if (>= size (array-dimension array 0))
-		 result-array
-		 (let* ((len (array-dimension array 0)))
-		   (loop for i from 0 to (1- len) do
-			 )))
-	     ))))
+  (labels ((internal-merge-sort (array size fpointer)
+	     (format t "array: ~a size: ~a fpointer: ~a~%" array size fpointer)
+	     (let* ((len (array-dimension array 0)))
+	       (if (>= size len)
+		   array
+		   (if (< (+ fpointer size) len)
+		       (if (< (+ fpointer size size) len)
+			   (internal-merge-sort (tail-recursive-merge array fpointer (+ fpointer size) (+ fpointer size) (+ fpointer size size))
+						size
+						(+ fpointer size size))
+			   (internal-merge-sort (tail-recursive-merge array fpointer (+ fpointer size) (+ fpointer size) len)
+						(* 2 size)
+						0))
+		       (internal-merge-sort array
+					    (* 2 size)
+					    0))))))
+    (internal-merge-sort array 1 0)))
+
+
 
 (defun tail-recursive-merge (array start1 end1 start2 end2)
-  (let* ((len (* (- end1 start1) 2))
-	 (copia (copy-array array))
-	 (i start1)
-	 (j start2))
+  (let* ((len (* (- end1 start1) 2)))
     (labels ((recursive-merge (array copy point cur1 end1 cur2 end2)
-	       (if (and (<= end1 cur1)
-			(<= end2 cur2))
+	       (if (and (>= cur1 end1)
+			(>= cur2 end2))
 		   array
-		   (if (>= end1 cur1)
+		   (if (>= cur1 end1)
 		       (progn (setf (aref array point) (aref copy cur2))
 			      (recursive-merge array copy (1+ point) cur1 end1 (1+ cur2) end2))
-		       (if (>= end2 cur2)
+		       (if (>= cur2 end2)
 			   (progn (setf (aref array point) (aref copy cur1))
 				  (recursive-merge array copy (1+ point) (1+ cur1) end1 cur2 end2))
-			   (if (> (aref copy cur1)
-				  (aref copy cur2))
-				  (recursive-merge array copy (1+ point) cur1 end1 (1+ cur2) end2)
-				  (recursive-merge array copy (1+ point) (1+ cur1) end1 cur2 end2))))))))))
+			   (if (>= (aref copy cur1)
+				   (aref copy cur2))
+			       (progn (setf (aref array point) (aref copy cur2))
+				      (recursive-merge array copy (1+ point) cur1 end1 (1+ cur2) end2))
+			       (progn (setf (aref array point) (aref copy cur1))
+				      (recursive-merge array copy (1+ point) (1+ cur1) end1 cur2 end2))))))))
+      (recursive-merge array (copy-array array) start1 start1 end1 start2 end2))))
+
+(defun test-mergesort ()
+  (let ((state (make-random-state))
+	(arey (make-array '(1000))))
+    (loop repeat 1000
+	  for i = 0 then (1+ i) do
+	    (setf (aref arey i) (random 100000 state)))
+    (let ((merge-sorted (tail-recursive-mergesort arey)))
+      (sort arey #'<)
+      (format t "merge: ~a sort: ~a ~%" merge-sorted arey)
+      (if (equalp arey merge-sorted)
+	  (format t "deu certo!~%")
+	  (format t "mergesort eh uma cocolord ~%")))))
 
 
+(test-mergesort)
 
 (defun solve-from-file ()
   (with-open-file (in "destination-cost.data" :direction :input)
