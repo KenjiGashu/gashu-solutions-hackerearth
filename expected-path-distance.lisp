@@ -35,8 +35,11 @@
     :initform nil)
    (num
     :initarg :num
-    :accessor num)))
-
+    :accessor num)
+   (visited
+    :initarg :visited
+    :accessor visited
+    :initform nil)))
 
 (defun insert-ordered (ordered-list elt)
   (if (null ordered-list)
@@ -44,7 +47,6 @@
       (if (> elt (car ordered-list))
 	  (cons (car ordered-list) (insert-ordered (cdr ordered-list) elt))
 	  (cons elt ordered-list))))
-
 
 (defun pop-list (ordered-list)
   (values (cdr ordered-list) (car ordered-list)))
@@ -55,10 +57,6 @@
 (defun get-neighbor-weight (neighbor)
   (cdr (car neighbor)))
 
-(defparameter *test-neighbor* (list (cons 0 2) (cons 4 8) (cons 3 33)))
-
-(search-node *test-neighbor* 4)
-
 (defun search-node (node-list node)
   (if (null node-list)
       nil
@@ -67,20 +65,15 @@
 	  (search-node (cdr node-list) node))))
 
 (defun add-node (graph from to weight)
+  (declare (optimize (debug 3)))
   (let ((node (gethash from graph)))
     (if (null node)
 	(setf (gethash from graph) (make-instance 'node :num from :neighbors (list (cons to weight))))
 	(with-accessors ((neighbors neighbors)) node
-	  (if (nul (search-node neighbors to))
-	      (setf neighbors (cons (cons to weight) neighbors))
+	  (if (null (search-node neighbors to))
+	      (progn (setf neighbors (cons (cons to weight) neighbors))
+		     node)
 	      node)))))
-
-(defparameter *teste* (make-hash-table))
-(setf (gethash 0 *teste*) (make-instance 'node))
-(let ((graph *teste*))
-  (with-accessors ((neighbors neighbors)) (gethash 0 *teste*)
-  (setf neighbors (cons (cons 0 1) neighbors))))
-
 
 (defun setup ()
   (setf *n* (read))
@@ -98,6 +91,7 @@
 	  (setf (aref *line* i) (cons (read) (read)))))
 
 (defun setup-from-file ()
+  (declare (optimize (debug 3)))
   (with-open-file (in "expected-path-distance.data" :direction :input)
     (setf *n* (1- (read in)))
     (setf *graph* (make-hash-table))
@@ -114,13 +108,6 @@
 	  for i = 0 then (1+ i) do
 	    (progn (setf (aref *line* i) (cons (read in) (read in)))))))
 
-(aref *line* 0)
-
-(setup-from-file)
-(init-graph 0)
-(loop repeat 3 do
-      (format t "iu"))
-
 (defun init-graph (problem-num)
   (setf *a* (car (aref *line* problem-num)))
   (setf *b* (cdr (aref *line* problem-num)))
@@ -134,10 +121,6 @@
   (setf (dist (gethash *a* *graph*)) 0)
   (setf *queue* (insert-ordered *queue* *a*)))
 
-(defparameter *teste* (make-hash-table))
-(setf (gethash 0 *teste*) (make-instance 'node))
-(setf (dist (gethash 0 *teste*)) 0)
-
 (defun solve ()
   (loop repeat *q*
 	for i = 0 then (1+ i) do
@@ -146,13 +129,38 @@
 		   (progn
 		     (multiple-value-bind (queue node)
 			 (pop-list *queue*)
+		       (setf (visited (gethash node *graph*)) t)
 		       (setf *queue* queue)
-		       (loop for neighbor in (neighbors node)
+		       (loop for neighbor in (neighbors (gethash node *graph*))
 			     do
-				(let ((adjacent (aref *nodes-set* (car neighbor))))
-				  (cond ((> (dist adjacent) (+ (dist node) (cdr neighbor)))
-					 (setf (dist adjacent) (+ (dist node) (cdr neighbor)))
-					 (setf (minimum adjacent) (num node)))))))
-		     
-			  )
-		   (while (not (null *queue*)))))))
+				(format t "visiting node: ~a~%" neighbor)
+				(let ((adjacent (gethash (car neighbor) *graph* ))
+				      (current (gethash node *graph* )))
+				  (cond ((> (dist adjacent) (+ (dist current) (cdr neighbor)))
+					 (setf (dist adjacent) (+ (dist current) (cdr neighbor)))
+					 (setf (minimum adjacent) (num current))))
+				  (unless (visited current)
+				    (setf *queue* (insert-ordered *queue* (num adjacent))))))))
+		   while (not (null *queue*))))))
+
+;; testes
+(setup-from-file)
+(init-graph 0)
+(loop repeat 3 do
+      (format t "iu"))
+
+(defparameter *teste* (make-hash-table))
+(setf (gethash 0 *teste*) (make-instance 'node))
+(let ((graph *teste*))
+  (with-accessors ((neighbors neighbors)) (gethash 0 *teste*)
+  (setf neighbors (cons (cons 0 1) neighbors))))
+
+(defparameter *teste* (make-hash-table))
+(setf (gethash 0 *teste*) (make-instance 'node))
+(setf (dist (gethash 0 *teste*)) 0)
+
+(defparameter *test-neighbor* (list (cons 0 2) (cons 4 8) (cons 3 33)))
+
+(search-node *test-neighbor* 4)
+
+(solve)
