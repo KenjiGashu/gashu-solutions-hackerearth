@@ -41,12 +41,25 @@
     :accessor visited
     :initform nil)))
 
+ (defmethod print-object ((obj node) stream)
+   (print-unreadable-object (obj stream :type t :identity t)
+     (format stream "NODE: ~%  dist: ~a~%  minimum: ~a~%  neighbors: ~a~%  node-num: ~a~%  visited: ~a~%"
+	     (dist obj) (minimum obj) (neighbors obj) (num obj) (visited obj))))
+
 (defun insert-ordered (ordered-list elt)
   (if (null ordered-list)
       (cons elt nil)
       (if (> elt (car ordered-list))
 	  (cons (car ordered-list) (insert-ordered (cdr ordered-list) elt))
 	  (cons elt ordered-list))))
+
+(defparameter *test-insert* nil)
+(setf *test-insert* (insert-ordered *test-insert* 4))
+(setf *test-insert* (insert-ordered *test-insert* 8))
+(setf *test-insert* (insert-ordered *test-insert* 7))
+(setf *test-insert* (insert-ordered *test-insert* 9))
+(setf *test-insert* (insert-ordered *test-insert* 9))
+
 
 (defun pop-list (ordered-list)
   (values (cdr ordered-list) (car ordered-list)))
@@ -58,6 +71,7 @@
   (cdr (car neighbor)))
 
 (defun search-node (node-list node)
+  (format t "search node ~a on nodelist: ~a~%" node node-list)
   (if (null node-list)
       nil
       (if (= (get-neighbor-dest node-list) node)
@@ -66,34 +80,23 @@
 
 (defun add-node (graph from to weight)
   (declare (optimize (debug 3)))
+  (format t "add node... from: ~a to: ~a weight: ~a~%" from to weight)
   (let ((node (gethash from graph)))
     (if (null node)
-	(setf (gethash from graph) (make-instance 'node :num from :neighbors (list (cons to weight))))
-	(with-accessors ((neighbors neighbors)) node
+	(progn
+	  (format t "new node! ~a~%" from)
+	  (make-instance 'node :num from :neighbors (list (cons to weight))))
+	(with-accessors ((neighbors neighbors) (num num)) node
+	  (format t "number: ~a from: ~a to: ~a~%" num from to)
 	  (if (null (search-node neighbors to))
-	      (progn (setf neighbors (cons (cons to weight) neighbors))
-		     node)
+	      (progn
+		(setf neighbors (cons (cons to weight) neighbors))
+		(format t "adicionado vizinho! ~a ~%" neighbors)
+		node) ;;neighbor already exists
 	      node)))))
 
 (defun setup ()
-  (setf *n* (read))
-  (setf *graph* (make-array (list *n*)))
-  (loop repeat *n*
-	for i = 0 then (1+ i) do
-	  (let ((from (read))
-		(to (read))
-		(weight (read)))
-	    (setf (aref *graph* from) (add-node *graph* from to weight))))
-  (setf *q* (read))
-  (setf *line* (make-array (list *q*)))
-  (loop repeat *q*
-	for i = 0 then (1+ i) do
-	  (setf (aref *line* i) (cons (read) (read)))))
-
-(defun setup-from-file ()
-  (declare (optimize (debug 3)))
-  (with-open-file (in "expected-path-distance.data" :direction :input)
-    (setf *n* (1- (read in)))
+  (setf *n* (1- (read in)))
     (setf *graph* (make-hash-table))
     (loop repeat *n*
 	  for i = 0 then (1+ i) do
@@ -106,6 +109,25 @@
     (setf *line* (make-array (list *q*)))
     (loop repeat *q*
 	  for i = 0 then (1+ i) do
+	    (progn (setf (aref *line* i) (cons (read in) (read in))))))
+
+(defun setup-from-file ()
+  (declare (optimize (debug 3)))
+  (with-open-file (in "expected-path-distance.data" :direction :input)
+    (setf *n* (1- (read in)))
+    (setf *graph* (make-hash-table))
+    (loop repeat *n*
+	  for i = 0 then (1+ i) do
+	    (let ((from (read in))
+		  (to (read in))
+		  (weight (read in)))
+	      (format t "adding node... from: ~a to: ~a weight: ~a~%" from to weight)
+	      (setf (gethash from *graph*) (add-node *graph* from to weight))
+	      (setf (gethash to *graph*) (add-node *graph* to from weight))))
+    (setf *q* (read in))
+    (setf *line* (make-array (list *q*)))
+    (loop repeat *q*
+	  for i = 0 then (1+ i) do
 	    (progn (setf (aref *line* i) (cons (read in) (read in)))))))
 
 (defun init-graph (problem-num)
@@ -114,12 +136,13 @@
   (loop for k being the hash-key of *graph* using (hash-value v) do
     (progn
       (unless (null v)
-	(format t "k: ~a v: ~a ~%" k v)
+	;;(format t "k: ~a v: ~a ~%" k v)
 	(setf (dist v) most-positive-fixnum)
 	(setf (minimum  v) (- 1)))))
-  (format t "a: ~a b: ~a ~%" *a* *b*)
+  ;;(format t "a: ~a b: ~a ~%" *a* *b*)
   (setf (dist (gethash *a* *graph*)) 0)
-  (setf *queue* (insert-ordered *queue* *a*)))
+  (setf *queue* (insert-ordered *queue* *a*))
+  (format t "queue: ~a~%" *queue*))
 
 (defun solve ()
   (loop repeat *q*
@@ -131,19 +154,32 @@
 			 (pop-list *queue*)
 		       (setf (visited (gethash node *graph*)) t)
 		       (setf *queue* queue)
+		       (format t "current: ~a neihgborhs: ~a~%" node (neighbors (gethash node *graph*)))
 		       (loop for neighbor in (neighbors (gethash node *graph*))
 			     do
 				(format t "visiting node: ~a~%" neighbor)
 				(let ((adjacent (gethash (car neighbor) *graph* ))
 				      (current (gethash node *graph* )))
+				  (format t "node: ~a saved-best: ~a current: ~a~%" (car neighbor) (dist adjacent) (+ (dist current) (cdr neighbor)))
 				  (cond ((> (dist adjacent) (+ (dist current) (cdr neighbor)))
 					 (setf (dist adjacent) (+ (dist current) (cdr neighbor)))
-					 (setf (minimum adjacent) (num current))))
-				  (unless (visited current)
-				    (setf *queue* (insert-ordered *queue* (num adjacent))))))))
+					 (setf (minimum adjacent) (num current))
+					 (format t "UPDATE! node: ~a dist: ~a minimum: ~a~%" neighbor (dist adjacent) (minimum adjacent))
+					 (format t "did it update? ADJACENT ~a~%" (dist adjacent))
+					 (format t "did it update? GETHASH ~a~%" (dist (gethash (car neighbor) *graph*)))
+					 ))
+				  (unless (visited adjacent)
+				    (setf *queue* (insert-ordered *queue* (car neighbor)))
+				    (format t "queue: ~a~%" *queue*))))))
 		   while (not (null *queue*))))))
 
 ;; testes
+
+(defun show-all-nodes (graph)
+  (loop for key being the hash-keys of graph
+	  using (hash-value value) do
+	    (format t "key: ~a no: ~a~%" key value)))
+
 (setup-from-file)
 (init-graph 0)
 (loop repeat 3 do
@@ -162,5 +198,7 @@
 (defparameter *test-neighbor* (list (cons 0 2) (cons 4 8) (cons 3 33)))
 
 (search-node *test-neighbor* 4)
+
+(show-all-nodes *graph*)
 
 (solve)
