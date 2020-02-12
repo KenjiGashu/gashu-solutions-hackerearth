@@ -39,6 +39,10 @@
    (visited
     :initarg :visited
     :accessor visited
+    :initform nil)
+   (path
+    :initarg :path
+    :accessor path
     :initform nil)))
 
  (defmethod print-object ((obj node) stream)
@@ -131,6 +135,7 @@
 	    (progn (setf (aref *line* i) (cons (read in) (read in)))))))
 
 (defun init-graph (problem-num)
+  (format t "init graph!~%")
   (setf *a* (car (aref *line* problem-num)))
   (setf *b* (cdr (aref *line* problem-num)))
   (loop for k being the hash-key of *graph* using (hash-value v) do
@@ -138,11 +143,27 @@
       (unless (null v)
 	;;(format t "k: ~a v: ~a ~%" k v)
 	(setf (dist v) most-positive-fixnum)
-	(setf (minimum  v) (- 1)))))
+	(setf (minimum  v) (- 1))
+	(setf (visited v) nil))))
   ;;(format t "a: ~a b: ~a ~%" *a* *b*)
   (setf (dist (gethash *a* *graph*)) 0)
   (setf *queue* (insert-ordered *queue* *a*))
-  (format t "queue: ~a~%" *queue*))
+  (format t "queue: ~a~%" *queue*)
+  (setf (path (gethash *a* *graph*)) (list *a*)))
+
+(defgeneric calc-expected-value (grap node))
+(defmethod calc-expected-value (graph (node node))
+  (with-accessors ((path path)) node
+    (let ((len (length path))
+	  (resp 0))
+      (loop for n in path do
+	(let ((current (gethash n graph)))
+	  (with-accessors ((dist dist)) current
+	    (+ resp dist) )))
+      (mod (/ resp len) (+ (expt 10 9) 7)))))
+
+
+
 
 (defun solve ()
   (loop repeat *q*
@@ -164,6 +185,7 @@
 				  (cond ((> (dist adjacent) (+ (dist current) (cdr neighbor)))
 					 (setf (dist adjacent) (+ (dist current) (cdr neighbor)))
 					 (setf (minimum adjacent) (num current))
+					 (setf (path adjacent) (cons (num adjacent) (path current)))
 					 (format t "UPDATE! node: ~a dist: ~a minimum: ~a~%" neighbor (dist adjacent) (minimum adjacent))
 					 (format t "did it update? ADJACENT ~a~%" (dist adjacent))
 					 (format t "did it update? GETHASH ~a~%" (dist (gethash (car neighbor) *graph*)))
@@ -171,7 +193,8 @@
 				  (unless (visited adjacent)
 				    (setf *queue* (insert-ordered *queue* (car neighbor)))
 				    (format t "queue: ~a~%" *queue*))))))
-		   while (not (null *queue*))))))
+		       while (not (null *queue*)))
+		 (format t "a: ~a b: ~a~%" (gethash *a* *graph*) (gethash *b* *graph*)))))
 
 ;; testes
 
@@ -202,3 +225,9 @@
 (show-all-nodes *graph*)
 
 (solve)
+
+
+
+;; response tests
+
+(defparameter *mock-response-node* (make-instance 'node :path (6 4 3 5 9 10) ))
