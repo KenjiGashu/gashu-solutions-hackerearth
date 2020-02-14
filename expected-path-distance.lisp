@@ -47,8 +47,8 @@
 
  (defmethod print-object ((obj node) stream)
    (print-unreadable-object (obj stream :type t :identity t)
-     (format stream "NODE: ~%  dist: ~a~%  minimum: ~a~%  neighbors: ~a~%  node-num: ~a~%  visited: ~a~%"
-	     (dist obj) (minimum obj) (neighbors obj) (num obj) (visited obj))))
+     (format stream "~a: ~%  dist:~a  minimum:~a~% neighbors:~a visited:~a~% path:~a~%"
+	     (num obj) (dist obj) (minimum obj) (neighbors obj)  (visited obj) (path obj))))
 
 (defun insert-ordered (ordered-list elt)
   (if (null ordered-list)
@@ -135,7 +135,7 @@
 	    (progn (setf (aref *line* i) (cons (read in) (read in)))))))
 
 (defun init-graph (problem-num)
-  (format t "init graph!~%")
+  ;;(format t "init graph!~%")
   (setf *a* (car (aref *line* problem-num)))
   (setf *b* (cdr (aref *line* problem-num)))
   (loop for k being the hash-key of *graph* using (hash-value v) do
@@ -148,19 +148,20 @@
   ;;(format t "a: ~a b: ~a ~%" *a* *b*)
   (setf (dist (gethash *a* *graph*)) 0)
   (setf *queue* (insert-ordered *queue* *a*))
-  (format t "queue: ~a~%" *queue*)
+  ;;(format t "queue: ~a~%" *queue*)
   (setf (path (gethash *a* *graph*)) (list *a*)))
 
-(defgeneric calc-expected-value (grap node))
-(defmethod calc-expected-value (graph (node node))
-  (with-accessors ((path path)) node
+
+(defmethod calc-expected-value (graph node-num)
+  (with-accessors ((path path)) (gethash node-num graph)
     (let ((len (length path))
 	  (resp 0))
       (loop for n in path do
 	(let ((current (gethash n graph)))
 	  (with-accessors ((dist dist)) current
-	    (+ resp dist) )))
-      (mod (/ resp len) (+ (expt 10 9) 7)))))
+	    (setf resp (+ resp dist))
+	    (format t "resp: ~a len: ~a~%" resp len))))
+      (mod (/ resp len) 1))))
 
 
 
@@ -175,33 +176,34 @@
 			 (pop-list *queue*)
 		       (setf (visited (gethash node *graph*)) t)
 		       (setf *queue* queue)
-		       (format t "current: ~a neihgborhs: ~a~%" node (neighbors (gethash node *graph*)))
+		       ;;(format t "current: ~a neihgborhs: ~a~%" node (neighbors (gethash node *graph*)))
 		       (loop for neighbor in (neighbors (gethash node *graph*))
 			     do
-				(format t "visiting node: ~a~%" neighbor)
+				;;(format t "visiting node: ~a~%" neighbor)
 				(let ((adjacent (gethash (car neighbor) *graph* ))
 				      (current (gethash node *graph* )))
-				  (format t "node: ~a saved-best: ~a current: ~a~%" (car neighbor) (dist adjacent) (+ (dist current) (cdr neighbor)))
+				  ;;(format t "node: ~a saved-best: ~a current: ~a~%" (car neighbor) (dist adjacent) (+ (dist current) (cdr neighbor)))
 				  (cond ((> (dist adjacent) (+ (dist current) (cdr neighbor)))
 					 (setf (dist adjacent) (+ (dist current) (cdr neighbor)))
 					 (setf (minimum adjacent) (num current))
 					 (setf (path adjacent) (cons (num adjacent) (path current)))
-					 (format t "UPDATE! node: ~a dist: ~a minimum: ~a~%" neighbor (dist adjacent) (minimum adjacent))
-					 (format t "did it update? ADJACENT ~a~%" (dist adjacent))
-					 (format t "did it update? GETHASH ~a~%" (dist (gethash (car neighbor) *graph*)))
+					 ;;(format t "UPDATE! node: ~a dist: ~a minimum: ~a~%" neighbor (dist adjacent) (minimum adjacent))
+					 ;;(format t "did it update? ADJACENT ~a~%" (dist adjacent))
+					 ;;(format t "did it update? GETHASH ~a~%" (dist (gethash (car neighbor) *graph*)))
 					 ))
 				  (unless (visited adjacent)
 				    (setf *queue* (insert-ordered *queue* (car neighbor)))
-				    (format t "queue: ~a~%" *queue*))))))
+				    ;;(format t "queue: ~a~%" *queue*)
+				    )))))
 		       while (not (null *queue*)))
-		 (format t "a: ~a b: ~a~%" (gethash *a* *graph*) (gethash *b* *graph*)))))
+		 (format t "~a~%" (calc-expected-value *graph* *b*)))))
 
 ;; testes
 
 (defun show-all-nodes (graph)
   (loop for key being the hash-keys of graph
 	  using (hash-value value) do
-	    (format t "key: ~a no: ~a~%" key value)))
+	    (format t "~a~%" value)))
 
 (setup-from-file)
 (init-graph 0)
@@ -226,8 +228,10 @@
 
 (solve)
 
+(calc-expected-value *graph* 8)
 
+(format t "~a~%" (gethash 3 *graph*))
 
 ;; response tests
 
-(defparameter *mock-response-node* (make-instance 'node :path (6 4 3 5 9 10) ))
+;(defparameter *mock-response-node* (make-instance 'node :path (6 4 3 5 9 10) ))
