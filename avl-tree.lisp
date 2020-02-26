@@ -5,7 +5,7 @@
 
 (in-package :avl-tree)
 
-(defclass nvl-treeame ()
+(defclass avl-tree ()
   ((key
     :initarg :key
     :accessor key)
@@ -25,13 +25,27 @@
     :accessor weight))
   (:documentation "avl-tree"))
 
+(defmethod print-object ((obj avl-tree) out)
+  (print-unreadable-object (obj out :type t)
+    (format out "K:~a" (key obj))))
+
+(defun avl-height (tree h)
+  (if (null tree)
+      h
+      (max (avl-height (left tree) (1+ h)) (avl-height (right tree) (1+ h)))))
+
+
+(defun print-tree (tree)
+  (labels ((print-intern (tree height str)
+	     (let ((h )))))
+    (let ((str (print-intern tree 0 ""))))))
+
 (defun create-avl-tree (key &optional (val 0) (left nil) (right nil) (weight 0))
   (make-instance 'avl-tree :key key :val val :left left :right right :weight weight))
 
-
 (defun rotate-left (node)
   (with-accessors ((left left) (right right) (key key) (val val)) (right node)
-    (make-insance 'node :key key :val val
+    (make-instance 'node :key key :val val
 			:left (make instance 'node :left (left node)
 						   :right left
 						   :key (key node)
@@ -39,20 +53,65 @@
 						   :weight (max (weight (weight (left node)) (weight (eight node)))))
 			:right right)))
 
+(defun rotate-right (node)
+  (with-accessors ((left left) (right right) (key key) (val val)) (left node)
+    (make-instance 'node :key key :val val
+			:left left
+			:right (make instance 'node :left right
+						   :right (right node)
+						   :key (key node)
+						   :val (val node)
+						    :weight (max (weight (weight (left node)) (weight (eight node))))))))
 
-;;mock tree
+(defun insert (node new)
+  (if (null node)
+      new
+      (if (> (key new) (key node))
+	  (multiple-value-bind (new-node rebalancep)
+	      (insert (right node) new)
+	    (if rebalancep
+		(cond ((> (weight node) 0) (values (rebalance-node (create-avl-tree (key node) (val node) (left node) new-node (weight node))) t))
+		      ((< (weight node) 0) (values (create-avl-tree (key node) (val node) (left node) new-node 0) nil))
+		      (t (values (create-avl-tree (key node) (val node) (left node) new-node 1) t)))
+		(values node nil)))
+	  (multiple-value-bind (new-node rebalancep)
+	      (insert (left node) new)
+	    (if rebalancep
+		(cond ((> (weight node) 0) (values (create-avl-tree (key node) (val node) new-node (right node) 0) nil))
+		      ((< (weight node) 0) (values (rebalance-node (create-avl-tree (key node) (val node) new-node (right node) (weight node))) t))
+		      (t (values (create-avl-tree (key node) (val node) (left node) new-node -1) t)))
+		(values node nil))))))
 
-(defparameter *no-35* (make-instance 'node :key 35 :val 35 :weight 0 :leaft nil :right nil))
-(defparameter *no-20* (make-instance 'node :key 20 :val 20 :weight 1 :left nil :right *no-35*))
-(defparameter *no-500* (make-instance 'node :key 500 :val 500 :weight 0 :leaft nil :right nil))
-(defparameter *no-600* (make-instance 'node :key 600 :val 600 :weight 0 :left nil :right nil))
-(defparameter *no-750* (make-instance 'node :key 750 :val 750 :weight -1 :left *no-600* :right nil))
-(defparameter *no-5000* (make-instance 'node :key 5000 :val 5000 :weight 0))
-(defparameter *no-1000* (make-instance 'node :key 1000 :val 1000 :weight -1 :left *no-750* :right *no-5000*))
-;;(defparameter *no-700* (make-instance 'node key 700 :val 700 :weight 0))
-(defparameter *no-550* (make-instance 'node :key 550 :val 550 :weight -1 :left *no-500* :right *no-1000*))
-(defparameter *no-100* (make-instance 'node :key 100 :val 100 :weight 2 :left *no-25* :eight *no-550*))
 
+
+;;mock tree for left right rotation (maybe)
+
+(defparameter *no-35* (make-instance 'avl-tree :key 35 :val 35 :weight 0 :leaft nil :right nil))
+(defparameter *no-20* (make-instance 'avl-tree :key 20 :val 20 :weight 1 :left nil :right *no-35*))
+(defparameter *no-500* (make-instance 'avl-tree :key 500 :val 500 :weight 0 :leaft nil :right nil))
+(defparameter *no-600* (make-instance 'avl-tree :key 600 :val 600 :weight 0 :left nil :right nil))
+(defparameter *no-750* (make-instance 'avl-tree :key 750 :val 750 :weight -1 :left *no-600* :right nil))
+(defparameter *no-5000* (make-instance 'avl-tree :key 5000 :val 5000 :weight 0))
+(defparameter *no-1000* (make-instance 'avl-tree :key 1000 :val 1000 :weight -1 :left *no-750* :right *no-5000*))
+;;(defparameter *no-700* (make-instance 'avl-tree key 700 :val 700 :weight 0))
+(defparameter *no-550* (make-instance 'avl-tree :key 550 :val 550 :weight -1 :left *no-500* :right *no-1000*))
+(defparameter *no-100* (make-instance 'avl-tree :key 100 :val 100 :weight 2 :left *no-25* :eight *no-550*))
+
+
+(defparameter *teste-insert* nil)
+(insert *teste-insert* (create-avl-tree 1 1 nil nil 0 ))
+
+
+;;teste avl-height
+(defparameter *no-150* (make-instance 'avl-tree :key 150 :val 35 :weight 0 :left nil :right nil))
+(defparameter *no-75* (make-instance 'avl-tree :key 75 :val 75 :weight 1 :left nil :right *no-150*))
+(defparameter *no-3* (make-instance 'avl-tree :key 3 :val 3 :weight 0 :left nil :right nil))
+(defparameter *no-4* (make-instance 'avl-tree :key 4 :val 4 :weight 0 :left *no-3* :right nil))
+(defparameter *no-5* (make-instance 'avl-tree :key 5 :val 5 :weight 0 :left *no-4* :right nil))
+(defparameter *no-15* (make-instance 'avl-tree :key 15 :val 15 :weight 1 :left *no-5* :right *no-75*))
+(avl-height *no-15* 0)
+(avl-height *no-75* 0)
+(avl-height *no-150* 0)
 ;;not working btw
 ;; (defclass avl-tree ()
 ;;   ((key
