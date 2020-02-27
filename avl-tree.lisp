@@ -34,11 +34,112 @@
       h
       (max (avl-height (left tree) (1+ h)) (avl-height (right tree) (1+ h)))))
 
+(defclass queue ()
+    ((start
+      :initarg :start
+      :accessor start
+      :initform nil)
+     (end
+      :initarg :end
+      :accessor end
+      :initform nil))
+  (:documentation "queue"))
+
+(defmethod print-object ((obj queue) out)
+  (print-unreadable-object (obj out :type t)
+    (format out "(")
+    (loop for x = (start obj) then (next x)
+	  while (not (null x)) do
+	  (format out "~a " (data x)))
+    (format out ")")))
+
+(defparameter temp1 (make-instance 'element :next nil :previous nil :data 0))
+(defparameter temp2 (make-instance 'element :next nil :previous temp1 :data 1))
+(setf (next temp1) temp2)
+(defparameter temp3 (make-instance 'element :next nil :previous temp2 :data 2))
+(setf (next temp2) temp3)
+(defparameter q (make-instance 'queue))
+(setf (start q) temp1)
+(setf (end q ) temp3)
+(setf q (insert-queue q 4))
+(data (start q))
+(data (end q))
+(pop-queue q)
+(format t "~a~%" q)
+
+(loop for x = temp1 then (next x)
+      while (not (null x)) do
+      (format t "asidasd~%"))
+
+(defclass element ()
+    ((data
+      :initarg :data
+      :accessor data)
+     (next
+      :initarg :next
+      :accessor next
+      :initform nil)
+     (previous
+      :initarg :previous
+      :accessor previous
+      :initform nil)))
+
+(defgeneric insert-queue (q elt))
+(defmethod insert-queue ((q queue) elt)
+  (with-accessors ((start start) (end end)) q
+    (if (null start)
+	(let* ((new-elt (make-instance 'element :data elt :next nil :previous nil)))
+	  (make-instance 'queue :start new-elt :end new-elt))
+	(let* ((new-elt (make-instance 'element :data elt :next nil :previous end)))
+	  (setf (next (end q)) new-elt)
+	  (setf (end q) new-elt)
+	  q))))
+
+(defgeneric pop-queue (q))
+(defmethod pop-queue ((q queue))
+  (if (null (start q))
+      nil
+      (let ((resp (start q)))
+	(setf (start q) (next (start q)))
+	(when (null (start q))
+	  (setf (end q) nil))
+	resp)))
+
+(defparameter temp (make-instance 'queue :start nil :end nil))
+(setf temp (insert-queue temp 9))
+(insert-queue temp 9)
+(start temp)
+(pop-queue temp)
+;; (defparameter temp (make-instance 'queue))
+;; (setf (slot-value temp 'end) nil)
+;; (format t "~a~%" temp)
+;; (slot-exists-p temp 'end)
 
 (defun print-tree (tree)
-  (labels ((print-intern (tree height str)
-	     (let ((h )))))
-    (let ((str (print-intern tree 0 ""))))))
+  (let* ((height (avl-height tree 0))
+	 (last-height height))
+    (format t "oi~%")
+    (if (null tree)
+	nil
+	(let ((fila (make-instance 'queue)))
+	  (setf fila (insert-queue fila (cons height tree)))
+	  (format t "fila: ~a~%" fila)
+	  (loop for n = (pop-queue fila) then (pop-queue fila)
+		while (not (null n)) do
+		  (let ((alt (car (data n)))
+			(no (cdr (data n))))
+		    (unless (= last-height alt)
+		      (format t "~%")
+		      
+		      (setf last-height alt))
+		    (unless (null (left no))
+		      (setf fila (insert-queue fila (cons (1- alt) (left no)))))
+		    (unless (null (right no))
+		      (setf fila (insert-queue fila (cons (1- alt) (right no)))))
+		    (format t (format nil "~~~aa" (expt 2 alt)) (key no))))))))
+
+(format t (format nil "~~~aa" (expt 2 3)) 10)
+
 
 (defun create-avl-tree (key &optional (val 0) (left nil) (right nil) (weight 0))
   (make-instance 'avl-tree :key key :val val :left left :right right :weight weight))
@@ -86,16 +187,16 @@
 
 ;;mock tree for left right rotation (maybe)
 
-(defparameter *no-35* (make-instance 'avl-tree :key 35 :val 35 :weight 0 :leaft nil :right nil))
+(defparameter *no-35* (make-instance 'avl-tree :key 35 :val 35 :weight 0 :left nil :right nil))
 (defparameter *no-20* (make-instance 'avl-tree :key 20 :val 20 :weight 1 :left nil :right *no-35*))
-(defparameter *no-500* (make-instance 'avl-tree :key 500 :val 500 :weight 0 :leaft nil :right nil))
+(defparameter *no-500* (make-instance 'avl-tree :key 500 :val 500 :weight 0 :left nil :right nil))
 (defparameter *no-600* (make-instance 'avl-tree :key 600 :val 600 :weight 0 :left nil :right nil))
 (defparameter *no-750* (make-instance 'avl-tree :key 750 :val 750 :weight -1 :left *no-600* :right nil))
 (defparameter *no-5000* (make-instance 'avl-tree :key 5000 :val 5000 :weight 0))
 (defparameter *no-1000* (make-instance 'avl-tree :key 1000 :val 1000 :weight -1 :left *no-750* :right *no-5000*))
 ;;(defparameter *no-700* (make-instance 'avl-tree key 700 :val 700 :weight 0))
 (defparameter *no-550* (make-instance 'avl-tree :key 550 :val 550 :weight -1 :left *no-500* :right *no-1000*))
-(defparameter *no-100* (make-instance 'avl-tree :key 100 :val 100 :weight 2 :left *no-25* :eight *no-550*))
+(defparameter *no-100* (make-instance 'avl-tree :key 100 :val 100 :weight 2 :left *no-25* :right *no-550*))
 
 
 (defparameter *teste-insert* nil)
@@ -109,6 +210,8 @@
 (defparameter *no-4* (make-instance 'avl-tree :key 4 :val 4 :weight 0 :left *no-3* :right nil))
 (defparameter *no-5* (make-instance 'avl-tree :key 5 :val 5 :weight 0 :left *no-4* :right nil))
 (defparameter *no-15* (make-instance 'avl-tree :key 15 :val 15 :weight 1 :left *no-5* :right *no-75*))
+(print-tree *no-15*)
+(print-tree *no-150*)
 (avl-height *no-15* 0)
 (avl-height *no-75* 0)
 (avl-height *no-150* 0)
